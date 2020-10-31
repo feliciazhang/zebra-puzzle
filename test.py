@@ -1,4 +1,8 @@
-from sat_utils import solve_one, from_dnf, one_of, translate
+"""
+From https://rhettinger.github.io/einstein.html#code-for-the-einstein-puzzle
+"""
+
+from sat_utils import solve_one, from_dnf, one_of, translate, solve_all
 from sys import intern
 from pprint import pprint
 
@@ -15,7 +19,6 @@ groups = [
 values = [value for group in groups for value in group]
 
 def comb(value, house):
-    'Format how a value is shown at a given house'
     return intern(f'{value} {house}')
 
 def found_at(value, house):
@@ -60,15 +63,16 @@ cnf += same_house('yellow', 'dunhill')
 cnf += found_at('milk', 3)
 cnf += found_at('norwegian', 1)
 cnf += beside('blends', 'cat')
-cnf += beside('horse', 'dunhill')
+# cnf += beside('horse', 'dunhill')
 cnf += same_house('blue master', 'root beer')
 cnf += same_house('german', 'prince')
 cnf += beside('norwegian', 'blue')
 cnf += beside('blends', 'water')
 
 
-pprint(cnf)
+# pprint(cnf)
 # pprint(translate(cnf))
-# pprint(solve_one(cnf))
+pprint(len(solve_all(cnf)))
+pprint(solve_all(cnf))
 
 # print("____________________________")
