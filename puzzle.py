@@ -3,7 +3,7 @@ Approach based on Raymond Hettinger's Einstein puzzle solution:
 https://rhettinger.github.io/einstein.html#code-for-the-einstein-puzzle
 """
 
-from pyeda.inter import And, Or, OneHot, exprvars, expr2truthtable, espresso_exprs
+from pyeda.inter import And, Or, OneHot, exprvars, espresso_exprs
 from pprint import pprint
 import json
 import sys
@@ -74,9 +74,7 @@ class Puzzle:
                 for idx in range(0, self.items_per) ])
             form.append(f.to_dnf())
 
-        f_onlyoneroot = And(*[f for f in form])
-
-        return f_onlyoneroot.to_dnf()
+        return form
 
     def one_in_each(self):
         """
@@ -91,9 +89,7 @@ class Puzzle:
                 for root in range(0, self.items_per) ])
             form.append(f.to_dnf())
 
-        f_oneineach = And(*[f for f in form])
-
-        return f_oneineach.to_dnf()
+        return form
 
     def are_same(self, value1, value2):
         """
@@ -160,15 +156,10 @@ class Puzzle:
 
     def eval_espresso(self):
         """
-        Minimize this puzzle's formula using espresso
+        Minimize this puzzle's formula using espresso and print the resulting formula
         """
         form = And(*[f.to_dnf() for f in self.formula ])
-        # print("og formula")
-        # print(form)
-
         esp_form, = espresso_exprs(form.to_dnf())
-        print("\n\nminimized formula:")
-        print(esp_form)
         return esp_form
 
     def fid_to_id(self, fid):
@@ -211,20 +202,33 @@ class Puzzle:
         else:
             return None
 
+    def big_base_dnf(self):
+        """
+        Get the two formulas that represent the basic rules of having exactly one value per category match with each other.
+        Each
+        """
+        base = self.only_one_root() + self.one_in_each()
+        group_by = 4
+        while len(base) > 1:
+            base_help = []
+            for i in range(0, len(base), group_by):
+                form = And(*[f for f in base[i: i+group_by] ])
+                base_help.append(form.to_dnf())
+            base = base_help
+
+        self.formula.append(base[0])
+
     def run(self):
-        base1 = self.only_one_root()
-        base2 = self.one_in_each()
-        print("pls")
-        base = And(base1, base2).to_dnf()
-        print(":(")
-        self.formula.append(base)
+        self.big_base_dnf()
 
         for clue in self.clueset:
             f = self.eval_clues(clue)
             if f:
                 self.formula.append(f)
         print(self.solve())
-        self.eval_espresso()
+
+        print("\n\nMinimized formula: ")
+        print(self.eval_espresso())
         # pprint(expr2truthtable(f_aresame))
 
 
