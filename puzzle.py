@@ -159,8 +159,16 @@ class Puzzle:
         return f_away.to_dnf()
 
     def eval_espresso(self):
-        form = And(*[f for f in self.formula ])
+        """
+        Minimize this puzzle's formula using espresso
+        """
+        form = And(*[f.to_dnf() for f in self.formula ])
+        # print("og formula")
+        # print(form)
+
         esp_form, = espresso_exprs(form.to_dnf())
+        print("\n\nminimized formula:")
+        print(esp_form)
         return esp_form
 
     def fid_to_id(self, fid):
@@ -177,14 +185,11 @@ class Puzzle:
         sol = [self.fid_to_id(var) for var in list(solved.keys()) if solved[var] == 1]
         sol = [self.id_to_var(id)  for id in sol]
         sol.sort(key = lambda var: int(var[-1:]))
+        print("Total possible solutions: ")
         print(form.satisfy_count())
 
+        print("SOLUTION: ")
         return sol
-
-        # number of solutions
-        # print(form.satisfy_count())
-        # print("\n\nSOLVED\n")
-        # print(test)
 
     def eval_clues(self, clue):
         """
@@ -207,23 +212,19 @@ class Puzzle:
             return None
 
     def run(self):
-        self.formula.append(self.only_one_root())
-        self.formula.append(self.one_in_each())
+        base1 = self.only_one_root()
+        base2 = self.one_in_each()
+        print("pls")
+        base = And(base1, base2).to_dnf()
+        print(":(")
+        self.formula.append(base)
 
         for clue in self.clueset:
             f = self.eval_clues(clue)
             if f:
                 self.formula.append(f)
-
         print(self.solve())
-
-
-        # self.formula.append(self.are_same("Batman", "ball"))
-        # self.formula.append(self.are_not("ball", "Starbuck"))
-        # self.formula.append(self.are_same("Dibii", "laser"))
-        # self.formula.append(self.are_same("Ruby", "sleep"))
-        # self.formula.append(self.is_x_away("Batman", "Starbuck", 2))
-        # self.eval_espresso()
+        self.eval_espresso()
         # pprint(expr2truthtable(f_aresame))
 
 

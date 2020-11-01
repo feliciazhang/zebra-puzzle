@@ -1,4 +1,7 @@
 # Hi sarah read this pls
+`python3 puzzle.py < Test/cats.json`
+
+run that^^ to see how we are screwed again
 
 ### puzzle.py
 this is back when i thought we were going places. this is the thing where i had the 27 vars
@@ -26,21 +29,6 @@ we should check.
 
 ### test_logic.py
 I even wrote unit tests for the above, thats how hard i thought this would work
-
-
-### anotherpuzzle.py
-this is basically just useless dont look at it
-after i gave up i tried to do it in a different rep with the 1:1:1:1 multi dimensional array that
-we said we weren't gonna do bc minimizing it is just itself and also we'd have to hard code to
-certain size and i got stuck basically immediately bc i just dont think you can do
-array access like that like say that the ith dimension is j. anyway this is almost an exact
-copy of the last file and tbh don't even bother looking at it.
-
-
-### sat_utils.py and test.py
-code that i straight copied off the internet (see source at top of file). it solves logic puzzle
-thats about it. I haven't used any of it but is a good example for messing around with and i took
-my approach from this.
 
 
 # New direction?
