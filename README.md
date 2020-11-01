@@ -27,6 +27,9 @@ Update: got espresso to work on the whole thing but re the screenshot i sent you
 is basically useless information. so i think we should still do something else if jason says ok.
 we should check.
 
+Update update: oneineach and onlyoneroot are fine on their own dnfed, but I cannot dnf them together.
+the bear pt 2
+
 ### test_logic.py
 I even wrote unit tests for the above, thats how hard i thought this would work
 
