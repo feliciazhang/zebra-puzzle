@@ -1,27 +1,18 @@
 """
 Approach based on Raymond Hettinger's Einstein puzzle solution:
 https://rhettinger.github.io/einstein.html#code-for-the-einstein-puzzle
-
-Easy logic puzzle- Cats in Spring
-https://www.ahapuzzles.com/logic/logic-puzzles/cats-in-spring/
-
-Categories:
-*# Kittens      ['1', '2', '3']
-Female          ["Ruby", "Spot", "Starbuck"]
-Activity        ["laser", "sleep", "ball"]
-Male            ["Batman", "Jake", "Dibii"]
-
-* root category
-
-Clues:
-1. Batman chose the female who liked to chase a ball, but she was not Starbuck.
-2. Dibii's companion liked to chase the laser light.
-3. Ruby loved to cuddle up to her male for a long afternoon nap in the sun.
-4. Starbuck had two more kittens than Batman's companion.
 """
 
 from pyeda.inter import And, Or, OneHot, exprvars, expr2truthtable, espresso_exprs
 from pprint import pprint
+import json
+import sys
+
+SAME = 'SAME'
+NOTSAME = 'NOTSAME'
+XAWAY = 'XAWAY'
+ISAT = 'ISAT'
+NOTAT = 'NOTAT'
 
 class Puzzle:
     root_group = []
@@ -167,7 +158,7 @@ class Puzzle:
         f_away = OneHot(*[f for f in f_away ])
         return f_away.to_dnf()
 
-    def dnf_formula(self):
+    def eval_espresso(self):
         form = And(*[f for f in self.formula ])
         esp_form, = espresso_exprs(form.to_dnf())
         return esp_form
@@ -195,35 +186,61 @@ class Puzzle:
         # print("\n\nSOLVED\n")
         # print(test)
 
+    def eval_clues(self, clue):
+        """
+        Returns the boolean formula for the given clue based on its type and values
+        :param clue: dict- a clue in the format of a proper JSON Clue
+        """
+        clue_type = clue["type"]
+        clue_args = clue["vals"]
+        if (clue_type == SAME):
+            return self.are_same(clue_args[0], clue_args[1])
+        elif (clue_type == NOTSAME):
+            return self.are_not(clue_args[0], clue_args[1])
+        elif (clue_type == XAWAY):
+            return self.is_x_away(clue_args[0], clue_args[1], clue_args[2])
+        elif (clue_type == ISAT):
+            return self.is_at(clue_args[0], clue_args[1])
+        elif (clue_type == NOTAT):
+            return self.is_not_at(clue_args[0], clue_args[1])
+        else:
+            return None
 
     def run(self):
         self.formula.append(self.only_one_root())
         self.formula.append(self.one_in_each())
-        self.formula.append(self.are_same("Batman", "ball"))
-        self.formula.append(self.are_not("ball", "Starbuck"))
-        self.formula.append(self.are_same("Dibii", "laser"))
-        self.formula.append(self.are_same("Ruby", "sleep"))
-        self.formula.append(self.is_x_away("Batman", "Starbuck", 2))
-        # self.dnf_formula()
+
+        for clue in self.clueset:
+            f = self.eval_clues(clue)
+            if f:
+                self.formula.append(f)
+
         print(self.solve())
+
+
+        # self.formula.append(self.are_same("Batman", "ball"))
+        # self.formula.append(self.are_not("ball", "Starbuck"))
+        # self.formula.append(self.are_same("Dibii", "laser"))
+        # self.formula.append(self.are_same("Ruby", "sleep"))
+        # self.formula.append(self.is_x_away("Batman", "Starbuck", 2))
+        # self.eval_espresso()
         # pprint(expr2truthtable(f_aresame))
 
 
 
+def clean_input(input):
+    """
+    Returns std input read from the command line as a pythonized JSON object. Input is valid JSON.
+    """
+    lines = list(map(lambda item: item.strip(), input))
+    lines = list(filter(None, lines))
+    lines_as_string = "".join(lines)
+    return json.loads(lines_as_string)
 
-root_group = ['1', '2', '3']
-groups = [
-    ["Ruby", "Spot", "Starbuck"],
-    ["laser", "sleep", "ball"],
-    ["Batman", "Jake", "Dibii"]
-]
+def main():
+    params = clean_input(sys.stdin.readlines())
+    print(params["description"])
+    puz = Puzzle(params["root"], params["groups"], params["clues"])
+    puz.run()
 
-ex_puzzle = Puzzle(root_group, groups, [])
-ex_puzzle.run()
-
-
-
-"""
-read input file from cmd,
-w clues in a standardized parseable format (or use expected json messages)
-"""
+main()
