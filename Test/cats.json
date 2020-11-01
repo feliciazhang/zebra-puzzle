@@ -1,0 +1,27 @@
+{
+    "description": "Easy logic puzzle- Cats in Spring\nhttps://www.ahapuzzles.com/logic/logic-puzzles/cats-in-spring/\n\nCategories: *# Kittens, Female, Activity, Male\n\nClues:\n1. Batman chose the female who liked to chase a ball, but she was not Starbuck.\n2. Dibii's companion liked to chase the laser light.\n3. Ruby loved to cuddle up to her male for a long afternoon nap in the sun.\n4. Starbuck had two more kittens than Batman's companion.\n",
+    "root": ["1", "2", "3"],
+    "groups": [["Ruby", "Spot", "Starbuck"], ["laser", "sleep", "ball"], ["Batman", "Jake", "Dibii"]],
+    "clues": [
+        {
+            "type": "SAME",
+            "vals": ["Batman", "ball"]
+        },
+        {
+            "type": "NOTSAME",
+            "vals": ["Starbuck", "ball"]
+        },
+        {
+            "type": "SAME",
+            "vals": ["Dibii", "laser"]
+        },
+        {
+            "type": "SAME",
+            "vals": ["Ruby", "sleep"]
+        },
+        {
+            "type": "XAWAY",
+            "vals": ["Batman", "Starbuck", 2]
+        }
+    ]
+}
