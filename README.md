@@ -1,8 +1,6 @@
 # Hi sarah read this pls
 `python3 puzzle.py < Test/cats.json`
 
-run that^^ to see how we are screwed again
-
 ### puzzle.py
 this is back when i thought we were going places. this is the thing where i had the 27 vars
 like `Ruby_1` `ball_1` etc and I thought i could just minimize that, and all the clues are in
@@ -61,3 +59,8 @@ if you replace the var with something that it has a "same as" clue for, ie if yo
 you can replace 1 with `Ruby has 1 more kitten than the cat that sleeps` to get the same results but
 not much else will have that happen. which makes sense bc like transitive property so idk if this
 is an important thing we can use.
+
+# TODO
+- more puzzles (ideally w not too many new clue types)
+- translate minimized form to english
+- fix xaway for negative steps
