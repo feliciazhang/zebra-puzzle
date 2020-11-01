@@ -20,11 +20,16 @@ a major factor in the minimization and there are no other libraries for espresso
 way too difficult to translate good inputs for bc theyre all truth table based and this truth
 table has 2^27 rows.
 
+Update: got espresso to work on the whole thing but re the screenshot i sent you the minimized version
+is basically useless information. so i think we should still do something else if jason says ok.
+we should check.
+
 ### test_logic.py
 I even wrote unit tests for the above, thats how hard i thought this would work
 
 
 ### anotherpuzzle.py
+this is basically just useless dont look at it
 after i gave up i tried to do it in a different rep with the 1:1:1:1 multi dimensional array that
 we said we weren't gonna do bc minimizing it is just itself and also we'd have to hard code to
 certain size and i got stuck basically immediately bc i just dont think you can do
@@ -50,4 +55,18 @@ stuff away the number changes. if we go that route the stuff we already have in 
 work. tried solve_one solve_all there and it does work, even with the one_in_each. we'd just have
 to flesh out more helpers for handling different clues and translating to comprehensible output.
 
-Update: minimizing the clue set is proven np hard so we need to do not that.
+Update: minimal clue set is proven np hard so we need to do not that. the paper i read
+said give up you cant do it
+
+observation: replacing a clue with the same type of clue (or even with a "same as" clue for that var),
+even w one of the same vars does not necessarily lead to the same number of possible solutions.
+so the clues are very tightly linked/dependent. the only thing that does guarantee same results is
+if you replace the var with something that it has a "same as" clue for, ie if you have:
+```
+1. Ruby has 1 more kitten than Spot
+
+2. Spot likes to sleep
+```
+you can replace 1 with `Ruby has 1 more kitten than the cat that sleeps` to get the same results but
+not much else will have that happen. which makes sense bc like transitive property so idk if this
+is an important thing we can use.

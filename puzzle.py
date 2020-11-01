@@ -20,7 +20,7 @@ Clues:
 4. Starbuck had two more kittens than Batman's companion.
 """
 
-from pyeda.inter import *
+from pyeda.inter import And, Or, OneHot, exprvars, expr2truthtable, espresso_exprs
 from pprint import pprint
 
 class Puzzle:
@@ -31,13 +31,11 @@ class Puzzle:
     formula = []
     X = None
 
-
     def __init__(self, root_group, groups, clueset):
         self.items_per = len(root_group)
         self.root_group = root_group
         self.groups = groups
         self.clueset = clueset
-
 
         self.X = exprvars('x', (0, self.items_per), (0, self.items_per), (0, self.items_per))
 
@@ -53,7 +51,8 @@ class Puzzle:
 
     def get_val_tuple(self, value):
         """
-        Gets the x,y list index of the group value given
+        Gets the list indices of the non-root group value given as a tuple
+        :param value: str- name of a value in one of the puzzle categories
         """
         group_id = ([(idx1, idx2)
                     for idx1, category in enumerate(self.groups)
@@ -71,30 +70,39 @@ class Puzzle:
 
         return (group_id[0], group_id[1], root_idx)
 
+    def only_one_root(self):
+        """
+        Returns the formula where every group value can only belong to one root value
+        in dnf form
+        """
+        form = []
+        for group in range(0, self.items_per):
+            f = And(*[
+                OneHot(*[ self.X[group, idx, root]
+                    for root in range(0, self.items_per) ])
+                for idx in range(0, self.items_per) ])
+            form.append(f.to_dnf())
+
+        f_onlyoneroot = And(*[f for f in form])
+
+        return f_onlyoneroot.to_dnf()
+
     def one_in_each(self):
         """
-        Returns the formula where only one item of each category can belong to the same root value
+        Returns the formula where every value in a group must belong to different root values
+        in dnf form
         """
-        f_oneineach = And(*[
-                        And(*[
-                            OneHot(*[ self.X[group, idx, root]
-                                for root in range(0, self.items_per) ])
-                            for idx in range(0, self.items_per) ])
-                        for group in range(0, self.items_per) ])
+        form = []
+        for group in range(0, self.items_per):
+            f = And(*[
+                OneHot(*[ self.X[group, idx, root]
+                    for idx in range(0, self.items_per) ])
+                for root in range(0, self.items_per) ])
+            form.append(f.to_dnf())
 
+        f_oneineach = And(*[f for f in form])
 
-        print(f_oneineach)
-        # print("\n\n")
-
-        # f_dnf = f_oneineach.to_dnf()
-        # print(f_dnf)
-        # f1m = espresso_exprs(f_dnf)
-        # print("\n\n")
-        # print(f1m)
-        # print("\n\n")
-        # print(f_oneineach)
-
-        return f_oneineach
+        return f_oneineach.to_dnf()
 
     def are_same(self, value1, value2):
         """
@@ -105,8 +113,6 @@ class Puzzle:
         f_aresame = Or(*[ And(self.X[group_1, val_1, idx], self.X[group_2, val_2, idx])
                         for idx in range(0, self.items_per) ])
 
-
-        # print(f_aresame)
         return f_aresame
 
     def are_not(self, value1, value2):
@@ -118,37 +124,88 @@ class Puzzle:
         f_arenot = Or(*[ And(self.X[group_1, val_1, idx], ~self.X[group_2, val_2, idx])
                         for idx in range(0, self.items_per) ])
 
-
-        # print(f_arenot)
         return f_arenot
 
-    def is_x_away(self, val1, val2, steps, group_id):
+    def is_at(self, value, root_val):
         """
-        Returns the formula for the comparison clue where val1 is some number of value steps away from val2.
-        steps (int): can be positive (older, larger, greater than etc) or negative (younger, earlier, less than etc) where val1 + steps = val2
-                     in terms of number of values away-- for values [$2, $4, $6], $2 more is 1 step, $4 is 2 steps.
-        group_id (int): the index of the category that the steps refers to
+        Returns the formula where the given non root value is at the given root value
+        :param value: str- the non root value that matches with the root value
+        :param root_val: str- the root value that matches with the given category value
         """
+        (group, val) = self.get_val_tuple(value)
+        idx = self.root_group.index(root_val)
+        return self.X[group, val, idx]
+
+    def is_not_at(self, value, root_val):
+        """
+        Returns the formula where the given non root value is not at the given root value
+        :param value: str- the non root value that does not match with the root value
+        :param root_val: str- the root value that does not match with the given category value
+        """
+        (group, val) = self.get_val_tuple(value)
+        idx = self.root_group.index(root_val)
+        return ~self.X[group, val, idx]
+
+
+    def is_x_away(self, val1, val2, steps):
+        """
+        Returns the formula for the comparison clue where val1 is some number of value steps away from val2,
+        where the comparison factor is the root group, and val2 must be at one of the root values that makes
+        such an implication possible. in dnf form
+        :param steps: int- can be positive or negative where val1 + steps = val2 in terms of number of values away
+                      eg. for values [$2, $4, $6], $2 more is 1 step, $4 is 2 steps.
+        :param val1: str- one of the non root values being compared
+        :param val2: str- one of the non root values being compared
+        """
+        (group_1, v_1) = self.get_val_tuple(val1)
+        (group_2, v_2) = self.get_val_tuple(val2)
+        f_away = []
+        for curr in range(0, self.items_per):
+            if (curr - steps >= 0):
+                f_away.append(And(self.X[group_2, v_2, curr], self.X[group_1, v_1, curr - steps]))
+
+        f_away = OneHot(*[f for f in f_away ])
+        return f_away.to_dnf()
 
     def dnf_formula(self):
         form = And(*[f for f in self.formula ])
-        # Messing around w solving
-        # test = form.satisfy_all()
-        # # number of solutions
-        # print(sum(1 for dummy in test))
+        esp_form, = espresso_exprs(form.to_dnf())
+        return esp_form
+
+    def fid_to_id(self, fid):
+        """
+        Translate expr formula id to id as a list of integers representing that indices of that variable
+        :param fid: str- the given expr formula id in the format 'x[a,b,c]'
+        """
+        as_str = str(fid)[2:7].split(',')
+        return [int(i) for i in as_str]
+
+    def solve(self):
+        form = And(*[f for f in self.formula ])
+        solved = form.satisfy_one()
+        sol = [self.fid_to_id(var) for var in list(solved.keys()) if solved[var] == 1]
+        sol = [self.id_to_var(id)  for id in sol]
+        sol.sort(key = lambda var: int(var[-1:]))
+        print(form.satisfy_count())
+
+        return sol
+
+        # number of solutions
+        # print(form.satisfy_count())
         # print("\n\nSOLVED\n")
         # print(test)
-        # esp_form, = espresso_exprs(form.to_dnf())
-        # print(esp_form)
 
 
     def run(self):
+        self.formula.append(self.only_one_root())
         self.formula.append(self.one_in_each())
         self.formula.append(self.are_same("Batman", "ball"))
         self.formula.append(self.are_not("ball", "Starbuck"))
         self.formula.append(self.are_same("Dibii", "laser"))
         self.formula.append(self.are_same("Ruby", "sleep"))
-        self.dnf_formula()
+        self.formula.append(self.is_x_away("Batman", "Starbuck", 2))
+        # self.dnf_formula()
+        print(self.solve())
         # pprint(expr2truthtable(f_aresame))
 
 
