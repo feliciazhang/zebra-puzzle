@@ -49,3 +49,5 @@ and i think thats the main thing we need to figure out bc we cant just be like i
 stuff away the number changes. if we go that route the stuff we already have in `puzzle.py` will
 work. tried solve_one solve_all there and it does work, even with the one_in_each. we'd just have
 to flesh out more helpers for handling different clues and translating to comprehensible output.
+
+Update: minimizing the clue set is proven np hard so we need to do not that.
