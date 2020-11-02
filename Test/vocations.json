@@ -1,7 +1,7 @@
 {
     "description": "Easy logic puzzle- Chosen Vocation\nhttps://www.ahapuzzles.com/logic/logic-puzzles/chosen-vocation/\n\nCategories: *Name, Univeristy, Vocation, Graduation Age\n\nClues:\n1. The youngest student did not graduate as a lawyer nor go to University B.\n2. The lawyer went to neither University A nor University B.\n3. Peter, who did not attend University A, was the oldest of the three students.\n4. The female student was older than the scientist but younger than the University C student.\n5. The University C student did not graduate as a scientist.\n",
     "root": ["Peter", "Paul", "Mary"],
-    "groups": [["University_A", "University_B", "University_C"], ["Doctor", "Lawyer", "Scientist"], ["23", "24", "26"]],
+    "groups": [["University A", "University B", "University C"], ["Doctor", "Lawyer", "Scientist"], ["23", "24", "26"]],
     "clues": [
         {
             "type": "NOTSAME",
@@ -9,19 +9,19 @@
         },
         {
             "type": "NOTSAME",
-            "vals": ["University_B", "23"]
+            "vals": ["University B", "23"]
         },
         {
             "type": "NOTSAME",
-            "vals": ["Lawyer", "University_A"]
+            "vals": ["Lawyer", "University A"]
         },
         {
             "type": "NOTSAME",
-            "vals": ["Lawyer", "University_B"]
+            "vals": ["Lawyer", "University B"]
         },
         {
             "type": "NOTAT",
-            "vals": ["University_A", "Peter"]
+            "vals": ["University A", "Peter"]
         },
         {
             "type": "ISAT",
@@ -41,11 +41,11 @@
         },
         {
             "type": "NOTAT",
-            "vals": ["University_C", "Mary"]
+            "vals": ["University C", "Mary"]
         },
         {
             "type": "NOTSAME",
-            "vals": ["University_C", "Scientist"]
+            "vals": ["University C", "Scientist"]
         }
     ]
 }

@@ -174,7 +174,7 @@ class Puzzle:
         form = And(*[f for f in self.formula ])
         solved = form.satisfy_one()
         sol = [self.fid_to_var(str(var)) for var in list(solved.keys()) if solved[var] == 1]
-        sol.sort(key = lambda var: int(var[-1:]))
+        sol.sort(key = lambda var: var.split('_')[-1])
         print("Total possible solutions: ")
         print(form.satisfy_count())
 
