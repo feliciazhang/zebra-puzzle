@@ -1,0 +1,27 @@
+{
+    "description": "Easy logic puzzle- The Bike Race\nhttps://www.ahapuzzles.com/logic/logic-puzzles/the-bike-race/\n\nCategories: *Rider, Cause, Location, Place\n\nClues:\n1. Neither of the girls fell off their bike.\n2. Daisy finished in the best position of the three.\n3. The rider in the mishap by the river finished second from last.\n4. Stella's mishap was a buckled wheel outside the library.\n",
+    "root": ["Daisy", "Stella", "Jim"],
+    "groups": [["Fell_Off", "Buckled_Wheel", "Punctured"], ["Hospital", "Library", "River"], ["Last", "2nd_from_last", "3rd_from_last"]],
+    "clues": [
+        {
+            "type": "ISAT",
+            "vals": ["Fell_Off", "Jim"]
+        },
+        {
+            "type": "ISAT",
+            "vals": ["3rd_from_last", "Daisy"]
+        },
+        {
+            "type": "SAME",
+            "vals": ["River", "2nd_from_last"]
+        },
+        {
+            "type": "ISAT",
+            "vals": ["Buckled_Wheel", "Stella"]
+        },
+        {
+            "type": "ISAT",
+            "vals": ["Library", "Stella"]
+        }
+    ]
+}
