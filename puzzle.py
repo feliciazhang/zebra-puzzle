@@ -191,8 +191,6 @@ class Puzzle:
             return self.is_at(clue_args[0], clue_args[1])
         elif (clue_type == NOTAT):
             return self.is_not_at(clue_args[0], clue_args[1])
-        elif (clue_type == ALLDIFF):
-            return self.all_diff(clue_args)
         else:
             return None
 
