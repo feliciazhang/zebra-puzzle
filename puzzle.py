@@ -64,7 +64,6 @@ class Puzzle:
                     for root in range(0, self.items_per) ])
                 for idx in range(0, self.items_per) ])
             form.append(f.to_dnf())
-
         return form
 
     def one_in_each(self):
@@ -79,7 +78,6 @@ class Puzzle:
                     for idx in range(0, self.items_per) ])
                 for root in range(0, self.items_per) ])
             form.append(f.to_dnf())
-
         return form
 
     def are_same(self, value1, value2):
@@ -144,7 +142,7 @@ class Puzzle:
 
         f_away = OneHot(*[f for f in f_away ])
         return f_away.to_dnf()
-
+        
     def eval_espresso(self):
         """
         Minimize this puzzle's formula using espresso
@@ -169,7 +167,7 @@ class Puzzle:
         form = And(*[f for f in self.formula ])
         solved = form.satisfy_one()
         sol = [self.fid_to_var(str(var)) for var in list(solved.keys()) if solved[var] == 1]
-        sol.sort(key = lambda var: int(var[-1:]))
+        sol.sort(key = lambda var: var.split('_')[-1])
         print("Total possible solutions: ")
         print(form.satisfy_count())
 
@@ -232,7 +230,8 @@ class Puzzle:
 
         print("\n\nMinimized formula: ")
         print(self.translate_f(self.eval_espresso()))
-        # pprint(expr2truthtable(f_aresame))
+
+        #no pprint(expr2truthtable(f_aresame))
 
 
 def clean_input(input):
