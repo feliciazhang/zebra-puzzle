@@ -6,6 +6,7 @@ https://rhettinger.github.io/einstein.html#code-for-the-einstein-puzzle
 from pyeda.inter import And, Or, OneHot, exprvars, espresso_exprs
 from pprint import pprint
 import json
+import re
 import sys
 
 SAME = 'SAME'
@@ -34,16 +35,6 @@ class Puzzle:
         self.clueset = clueset
 
         self.X = exprvars('x', (0, self.items_per), (0, self.items_per), (0, self.items_per))
-
-    def id_to_var(self, id):
-        """
-        Translates the id tuple (x, y, z) into the english variable, where x,y referes to the indices
-        of the 2D groups list, and z is the index of the root category
-        """
-        x, y, z = id
-        value = self.groups[x][y]
-        root = self.root_group[z]
-        return f'{value}_{root}'
 
     def get_val_tuple(self, value):
         """
@@ -153,7 +144,7 @@ class Puzzle:
         (group_2, v_2) = self.get_val_tuple(val2)
         f_away = []
         for curr in range(0, self.items_per):
-            if (curr - steps >= 0):
+            if (curr - steps >= 0 and curr - steps < self.items_per):
                 f_away.append(And(self.X[group_2, v_2, curr], self.X[group_1, v_1, curr - steps]))
 
         f_away = OneHot(*[f for f in f_away ])
@@ -161,26 +152,29 @@ class Puzzle:
 
     def eval_espresso(self):
         """
-        Minimize this puzzle's formula using espresso and print the resulting formula
+        Minimize this puzzle's formula using espresso
         """
         form = And(*[f.to_dnf() for f in self.formula ])
         esp_form, = espresso_exprs(form.to_dnf())
         return esp_form
 
-    def fid_to_id(self, fid):
+    def fid_to_var(self, fid):
         """
-        Translate expr formula id to id as a list of integers representing that indices of that variable
+        Translate expr formula id to its corresponding english variable
         :param fid: str- the given expr formula id in the format 'x[a,b,c]'
         """
-        as_str = str(fid)[2:7].split(',')
-        return [int(i) for i in as_str]
+        index_only = fid[2:7].split(',')
+        id = [int(i) for i in index_only]
+        x, y, z = id
+        value = self.groups[x][y]
+        root = self.root_group[z]
+        return f'{value}_{root}'
 
     def solve(self):
         form = And(*[f for f in self.formula ])
         solved = form.satisfy_one()
-        sol = [self.fid_to_id(var) for var in list(solved.keys()) if solved[var] == 1]
-        sol = [self.id_to_var(id)  for id in sol]
-        # sol.sort(key = lambda var: int(var[-1:]))
+        sol = [self.fid_to_var(str(var)) for var in list(solved.keys()) if solved[var] == 1]
+        sol.sort(key = lambda var: int(var[-1:]))
         print("Total possible solutions: ")
         print(form.satisfy_count())
 
@@ -209,8 +203,9 @@ class Puzzle:
 
     def big_base_dnf(self):
         """
-        Get the two formulas that represent the basic rules of having exactly one value per category match with each other.
-        Each
+        Gets the two formulas that represent the basic rules of having exactly one value per category match with each other
+        and appends those two formulae And'd together in dnf form to this puzzle's formula. This must be done in merged stages
+        because it is too big of a formula to turn to dnf all at once.
         """
         base = self.only_one_root() + self.one_in_each()
         group_by = 4
@@ -223,6 +218,14 @@ class Puzzle:
 
         self.formula.append(base[0])
 
+    def translate_f(self, formula):
+        """
+        Translates a formula into english variable names
+        :param formula: Expr- the formula
+        """
+        eng_formula = re.sub('x\[\d,\d,\d\]', lambda match: self.fid_to_var(match.group()), str(formula))
+        return eng_formula
+
     def run(self):
         self.big_base_dnf()
 
@@ -233,9 +236,8 @@ class Puzzle:
         print(self.solve())
 
         print("\n\nMinimized formula: ")
-        print(self.eval_espresso())
+        print(self.translate_f(self.eval_espresso()))
         # pprint(expr2truthtable(f_aresame))
-
 
 
 def clean_input(input):
@@ -253,4 +255,5 @@ def main():
     puz = Puzzle(params["root"], params["groups"], params["clues"])
     puz.run()
 
-main()
+if __name__ == "__main__":
+  main()
