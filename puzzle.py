@@ -14,6 +14,11 @@ XAWAY = 'XAWAY'
 ISAT = 'ISAT'
 NOTAT = 'NOTAT'
 
+# TODO
+# Add in code for doing XAWAY not on the root group
+# can add something to like XAWAY_NOTROOT as like explicitly state which categories
+# and then make that ordered list a part of the puzzle json
+
 class Puzzle:
     root_group = []
     groups = []
