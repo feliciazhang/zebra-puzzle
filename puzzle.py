@@ -15,11 +15,6 @@ XAWAY = 'XAWAY'
 ISAT = 'ISAT'
 NOTAT = 'NOTAT'
 
-# TODO
-# Add in code for doing XAWAY not on the root group
-# can add something to like XAWAY_NOTROOT as like explicitly state which categories
-# and then make that ordered list a part of the puzzle json
-
 class Puzzle:
     root_group = []
     groups = []
@@ -69,7 +64,6 @@ class Puzzle:
                     for root in range(0, self.items_per) ])
                 for idx in range(0, self.items_per) ])
             form.append(f.to_dnf())
-
         return form
 
     def one_in_each(self):
@@ -84,7 +78,6 @@ class Puzzle:
                     for idx in range(0, self.items_per) ])
                 for root in range(0, self.items_per) ])
             form.append(f.to_dnf())
-
         return form
 
     def are_same(self, value1, value2):
@@ -149,7 +142,7 @@ class Puzzle:
 
         f_away = OneHot(*[f for f in f_away ])
         return f_away.to_dnf()
-
+        
     def eval_espresso(self):
         """
         Minimize this puzzle's formula using espresso
@@ -198,6 +191,8 @@ class Puzzle:
             return self.is_at(clue_args[0], clue_args[1])
         elif (clue_type == NOTAT):
             return self.is_not_at(clue_args[0], clue_args[1])
+        elif (clue_type == ALLDIFF):
+            return self.all_diff(clue_args)
         else:
             return None
 
@@ -237,7 +232,8 @@ class Puzzle:
 
         print("\n\nMinimized formula: ")
         print(self.translate_f(self.eval_espresso()))
-        # pprint(expr2truthtable(f_aresame))
+
+        #no pprint(expr2truthtable(f_aresame))
 
 
 def clean_input(input):
