@@ -3,10 +3,13 @@
 
 # TODOs (delete this later)
 MUST DO
+- add makefile (just pip install pyeda-- try on ccis box?)
 - write the whole report lmao
 - write this readme
-- clean up purpose statements, data defs
+- error messaging/graceful failure
+- clean up purpose statements, data defs, code efficiency cleanup
 - more unit tests
+- testing, from rubric: "Some independent verification shows program's correctness" website solutions i guess?
 
 NICE TO DO
 - add greater than/less than clue type
@@ -16,7 +19,14 @@ NICE TO DO
 ## Directory structure
 
 ## Usage
-`python3 puzzle.py < Test/cats.json`
+`make`
+`./logicpuzzle <op-type> < Test/cats.json`
+
+- `NONE`
+- `MIN`
+- `RED`
+- `ALT`
+- `ALL`
 
 ## Puzzle data definition
 
