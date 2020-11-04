@@ -1,51 +1,51 @@
 {
-    "description": "Easy logic puzzle- Chosen Vocation\nhttps://www.ahapuzzles.com/logic/logic-puzzles/chosen-vocation/\n\nCategories: *Name, Univeristy, Vocation, Graduation Age\n\nClues:\n1. The youngest student did not graduate as a lawyer nor go to University B.\n2. The lawyer went to neither University A nor University B.\n3. Peter, who did not attend University A, was the oldest of the three students.\n4. The female student was older than the scientist but younger than the University C student.\n5. The University C student did not graduate as a scientist.\n",
-    "root": ["Peter", "Paul", "Mary"],
-    "groups": [["University A", "University B", "University C"], ["Doctor", "Lawyer", "Scientist"], ["23", "24", "26"]],
+    "description": "Easy logic puzzle- Chosen Vocation\nhttps://www.ahapuzzles.com/logic/logic-puzzles/chosen-vocation/\n\nCategories: *Graduation Age, Name, Univeristy, Vocation\n\nClues:\n1. The youngest student did not graduate as a lawyer nor go to University B.\n2. The lawyer went to neither University A nor University B.\n3. Peter, who did not attend University A, was the oldest of the three students.\n4. The female student was older than the scientist but younger than the University C student.\n5. The University C student did not graduate as a scientist.\n",
+    "root": ["23", "24", "26"],
+    "groups": [["UniversityA", "UniversityB", "UniversityC"], ["Doctor", "Lawyer", "Scientist"], ["Peter", "Paul", "Mary"]],
     "clues": [
         {
-            "type": "NOTSAME",
+            "type": "NOTAT",
             "vals": ["Lawyer", "23"]
         },
         {
-            "type": "NOTSAME",
-            "vals": ["University B", "23"]
-        },
-        {
-            "type": "NOTSAME",
-            "vals": ["Lawyer", "University A"]
-        },
-        {
-            "type": "NOTSAME",
-            "vals": ["Lawyer", "University B"]
-        },
-        {
             "type": "NOTAT",
-            "vals": ["University A", "Peter"]
+            "vals": ["UniversityB", "23"]
+        },
+        {
+            "type": "NOTSAME",
+            "vals": ["Lawyer", "UniversityA"]
+        },
+        {
+            "type": "NOTSAME",
+            "vals": ["Lawyer", "UniversityB"]
+        },
+        {
+            "type": "NOTSAME",
+            "vals": ["UniversityA", "Peter"]
         },
         {
             "type": "ISAT",
-            "vals": ["26", "Peter"]
+            "vals": ["Peter", "26"]
         },
         {
-            "type": "NOTAT",
+            "type": "NOTSAME",
             "vals": ["Scientist", "Mary"]
         },
         {
             "type": "NOTAT",
-            "vals": ["23", "Mary"]
+            "vals": ["Mary", "23"]
         },
         {
             "type": "NOTAT",
-            "vals": ["26", "Mary"]
-        },
-        {
-            "type": "NOTAT",
-            "vals": ["University C", "Mary"]
+            "vals": ["Mary","26"]
         },
         {
             "type": "NOTSAME",
-            "vals": ["University C", "Scientist"]
+            "vals": ["UniversityC", "Mary"]
+        },
+        {
+            "type": "NOTSAME",
+            "vals": ["UniversityC", "Scientist"]
         }
     ]
 }

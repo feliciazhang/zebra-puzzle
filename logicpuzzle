@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+
+import puzzle as P
+import argparse
+import json
+import sys
+
+def clean_input(input):
+    """
+    Returns std input read from the command line as a pythonized JSON object. Input is a valid JSON string
+    :param input: str- the puzzle input as a json string
+    """
+    lines = [item.strip() for item in input]
+    lines = [line for line in lines if line]
+    lines_as_string = "".join(lines)
+    return json.loads(lines_as_string)
+
+def main():
+    parser = argparse.ArgumentParser(description='logic puzzle computations')
+    parser.add_argument('type', type=str, help="type of puzzle computation. one of 'MIN' 'CLUESET' 'ALT' or ALL")
+    args = parser.parse_args()
+
+    params = clean_input(sys.stdin.readlines())
+    print(params["description"])
+    puz = P.Puzzle(params["root"], params["groups"], params["clues"])
+    puz.run(args.type)
+
+
+if __name__ == "__main__":
+  main()

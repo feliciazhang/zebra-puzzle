@@ -22,6 +22,10 @@
         {
             "type": "XAWAY",
             "vals": ["Batman", "Starbuck", 2]
+        },
+        {
+            "type": "XAWAY",
+            "vals": ["Starbuck", "Batman", -2]
         }
     ]
 }
