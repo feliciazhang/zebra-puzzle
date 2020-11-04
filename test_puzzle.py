@@ -11,7 +11,21 @@ class LogicTest(unittest.TestCase):
         ["laser", "sleep", "ball"],
         ["Batman", "Jake", "Dibii"]
     ]
-    ex_puzzle = P.Puzzle(root_group, groups, [])
+    clues = [
+        {
+            "type": "SAME",
+            "vals": ["Batman", "ball"]
+        },
+        {
+            "type": "XAWAY",
+            "vals": ["Batman", "Starbuck", 2]
+        },
+        {
+            "type": "SAME",
+            "vals": ["Dibii", "laser"]
+        }
+    ]
+    ex_puzzle = P.Puzzle(root_group, groups, clues)
 
     def test_var_to_id(self):
         self.assertEqual(self.ex_puzzle.var_to_id("sleep_1"), (1, 1, 0))
@@ -45,6 +59,49 @@ class LogicTest(unittest.TestCase):
         f_str = 'Or(And(Starbuck_3, Batman_2), And(Starbuck_2, Batman_1))'
 
         self.assertEqual(self.ex_puzzle.translate_f(f), f_str)
+
+    def test_get_same_mapping(self):
+        sames = {
+            "Batman": "ball",
+            "ball": "Batman",
+            "Dibii": "laser",
+            "laser": "Dibii"
+        }
+        self.assertEqual(self.ex_puzzle.get_same_mapping(), sames)
+
+    def test_new_xaway_clue(self):
+        sames = self.ex_puzzle.get_same_mapping()
+        clue = ["Batman", "laser", 1]
+        clue_nomatch = ["Ruby", "sleep", -1]
+
+        new_clue = {
+            "type": "XAWAY",
+            "vals": ["ball", "Dibii", 1]
+        }
+
+        self.assertEqual(self.ex_puzzle.new_xaway_clue(sames, clue), new_clue)
+        self.assertFalse(self.ex_puzzle.new_xaway_clue(sames, clue_nomatch))
+
+    def test_alt_clueset(self):
+        alt =[
+            {
+                "type": "SAME",
+                "vals": ["Batman", "ball"]
+            },
+            {
+                "type": "XAWAY",
+                "vals": ["ball", "Starbuck", 2]
+            },
+            {
+                "type": "SAME",
+                "vals": ["Dibii", "laser"]
+            }
+        ]
+        self.assertEqual(self.ex_puzzle.alt_clueset(), alt)
+
+        no_puzzle = P.Puzzle([], [], [])
+        self.assertFalse(no_puzzle.alt_clueset())
+
 
 
 if __name__ == "__main__":

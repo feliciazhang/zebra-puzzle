@@ -5,9 +5,7 @@ https://rhettinger.github.io/einstein.html#code-for-the-einstein-puzzle
 
 from pyeda.inter import And, Or, OneHot, exprvars, espresso_exprs
 from pprint import pprint
-import json
 import re
-import sys
 
 SAME = 'SAME'
 NOTSAME = 'NOTSAME'
@@ -29,7 +27,7 @@ class Puzzle:
         self.groups = groups
         self.clueset = clueset
 
-        self.X = exprvars('x', (0, self.items_per), (0, self.items_per), (0, self.items_per))
+        self.X = exprvars('x', (0, len(self.groups)), (0, self.items_per), (0, self.items_per))
 
     def get_val_tuple(self, value):
         """
@@ -52,13 +50,25 @@ class Puzzle:
 
         return (group_id[0], group_id[1], root_idx)
 
+    def fid_to_var(self, fid):
+        """
+        Translate expr formula id to its corresponding english variable
+        :param fid: str- the given expr formula id in the format 'x[a,b,c]'
+        """
+        index_only = fid[2:7].split(',')
+        id = [int(i) for i in index_only]
+        x, y, z = id
+        value = self.groups[x][y]
+        root = self.root_group[z]
+        return f'{value}_{root}'
+
     def only_one_root(self):
         """
         Returns the formula where every group value can only belong to one root value
         in dnf form
         """
         form = []
-        for group in range(0, self.items_per):
+        for group in range(0, len(self.groups)):
             f = And(*[
                 OneHot(*[ self.X[group, idx, root]
                     for root in range(0, self.items_per) ])
@@ -72,7 +82,7 @@ class Puzzle:
         in dnf form
         """
         form = []
-        for group in range(0, self.items_per):
+        for group in range(0, len(self.groups)):
             f = And(*[
                 OneHot(*[ self.X[group, idx, root]
                     for idx in range(0, self.items_per) ])
@@ -142,42 +152,33 @@ class Puzzle:
 
         f_away = OneHot(*[f for f in f_away ])
         return f_away.to_dnf()
-        
+
     def eval_espresso(self):
         """
         Minimize this puzzle's formula using espresso
+        :return Expr: the minimized form of this puzzle
         """
-        form = And(*[f.to_dnf() for f in self.formula ])
-        esp_form, = espresso_exprs(form.to_dnf())
+        esp_form, = espresso_exprs(self.formula.to_dnf())
         return esp_form
 
-    def fid_to_var(self, fid):
-        """
-        Translate expr formula id to its corresponding english variable
-        :param fid: str- the given expr formula id in the format 'x[a,b,c]'
-        """
-        index_only = fid[2:7].split(',')
-        id = [int(i) for i in index_only]
-        x, y, z = id
-        value = self.groups[x][y]
-        root = self.root_group[z]
-        return f'{value}_{root}'
-
     def solve(self):
-        form = And(*[f for f in self.formula ])
-        solved = form.satisfy_one()
+        """
+        Solve this puzzle returning a valid solution and the number of total possible solutions there are
+        :return Tuple<List<str>, int>: the solution to the puzzle as a list of english variable names and
+                                the number of possible solutions there are in this puzzle
+        """
+        solved = self.formula.satisfy_one()
         sol = [self.fid_to_var(str(var)) for var in list(solved.keys()) if solved[var] == 1]
         sol.sort(key = lambda var: var.split('_')[-1])
-        print("Total possible solutions: ")
-        print(form.satisfy_count())
+        count = self.formula.satisfy_count()
 
-        print("SOLUTION: ")
-        return sol
+        return (sol, count)
 
     def eval_clues(self, clue):
         """
         Returns the boolean formula for the given clue based on its type and values
         :param clue: dict- a clue in the format of a proper JSON Clue
+        :return:
         """
         clue_type = clue["type"]
         clue_args = clue["vals"]
@@ -194,7 +195,7 @@ class Puzzle:
         else:
             return None
 
-    def big_base_dnf(self):
+    def rules_dnf(self):
         """
         Gets the two formulas that represent the basic rules of having exactly one value per category match with each other
         and appends those two formulae And'd together in dnf form to this puzzle's formula. This must be done in merged stages
@@ -209,7 +210,7 @@ class Puzzle:
                 base_help.append(form.to_dnf())
             base = base_help
 
-        self.formula.append(base[0])
+        return base[0]
 
     def translate_f(self, formula):
         """
@@ -219,35 +220,124 @@ class Puzzle:
         eng_formula = re.sub('x\[\d,\d,\d\]', lambda match: self.fid_to_var(match.group()), str(formula))
         return eng_formula
 
-    def run(self):
-        self.big_base_dnf()
+    def extra_clues_help(self, rules, acc, clues):
+        """
+        Helper to get extraneous clue sets
+        :param rules: Expr- the base formula for the rules of the puzzle
+        :param acc: List- list of already extraneous clues and checks if other clues are further removable
+        :param clues: List- all the clues as Expr formulae
+        """
+        extra = []
+        remaining = [c for id, c in enumerate(clues) if not(id in acc)]
+        for id, clue in enumerate(clues):
+            if (id in acc):
+                break
+
+            lo_formula = [f.to_dnf() for idx, f in enumerate(remaining) if (idx != id)]
+            fx = And(*(lo_formula + [rules]))
+            num_sols = fx.satisfy_count()
+            if num_sols == 1:
+                extra.append(acc + [id])
+                extra = extra + self.extra_clues_help(rules, acc + [id], clues)
+
+        return extra
+
+    def extra_clues(self, rules):
+        """
+        Gets all the possible sets of extraneous clues that could be removed from the clueset
+        and still result in a single puzzle solution
+        :param rules: Expr- the base formula for the rules of the puzzle
+        :return List<List<int>>: a list of sets of removable clues where the clue is represented by the
+                        index at which it appears in the inputted clue list starting from 0
+        """
+        clue_f = [self.eval_clues(clue) for clue in self.clueset]
+        return self.extra_clues_help(rules, [], clue_f)
+
+    def get_same_mapping(self):
+        """
+        Gets a dictionary where each key and value pair have a SAMEAS clue associating them. Each key
+        only has one such value, even if it has multiple SAMEAS relations, and it will ues the relation
+        of the last clue in the clueset.
+        :return Dict: the SAMEAS variable mapping from the clue set
+        """
+        sames = {}
+        for clue in self.clueset:
+            if clue["type"] == SAME:
+                sames[clue["vals"][0]] = clue["vals"][1]
+                sames[clue["vals"][1]] = clue["vals"][0]
+
+        return sames
+
+    def new_xaway_clue(self, sames, clue_vals):
+        """
+        Creates a new equivalent XAWAY clue by replacing the given clue values with other variables
+        that are known to be at the same root based on the given sames mapping.
+        If there are no alternate mappings, then returns None
+        :param sames: Dict- the SAMEAS variable mapping from the clue set
+        :param clue_vals: List- the vals field of a XAWAY clue
+        :return Dict: A full XAWAY clue in the standard json format that is equivalent to the given values or None
+        """
+        val0 = sames.get(clue_vals[0])
+        val1 = sames.get(clue_vals[1])
+
+        if (not val0 and not val1):
+            return None
+
+        return {
+            "type": XAWAY,
+            "vals": [val0 or clue_vals[0], val1 or clue_vals[1], clue_vals[2]]
+        }
+
+    def alt_clueset(self):
+        """
+        Returns an alternative clueset that replaces all XAWAY clues with a logically equivalent
+        clue, such that the puzzle solution is still the same single valid solution. An alternative
+        clueset is only possible for puzzles that contain at least one XAWAY and one SAMEAS clue
+        that share a common variable (per the transitive property).
+        :return List<Clue>: List of clues in the expected json format
+        """
+        sames = self.get_same_mapping()
+        new_clues = []
+        has_changes = False
 
         for clue in self.clueset:
-            f = self.eval_clues(clue)
-            if f:
-                self.formula.append(f)
-        print(self.solve())
+            if (clue["type"] == XAWAY):
+                alt = self.new_xaway_clue(sames, clue["vals"])
+                if alt:
+                    new_clues.append(alt)
+                    has_changes = True
+            else:
+                new_clues.append(clue)
 
-        print("\n\nMinimized formula: ")
-        print(self.translate_f(self.eval_espresso()))
+        return new_clues if has_changes else None
 
-        #no pprint(expr2truthtable(f_aresame))
+    def run(self, op):
+        """
+        Run the grid puzzle evaluation based on the given process type and prints the results
+        :param op: str- the type of additional operations to run on the logic puzzle
+        """
+        rules = self.rules_dnf()
+        self.formula.append(rules)
+        clue_form = [self.eval_clues(clue) for clue in self.clueset]
+        self.formula = self.formula + clue_form
+        self.formula = And(*[f.to_dnf() for f in self.formula ])
 
+        sol, count = self.solve()
+        print("Number of possible solutions: ", count)
+        print("Solution:")
+        print(sol)
 
-def clean_input(input):
-    """
-    Returns std input read from the command line as a pythonized JSON object. Input is valid JSON.
-    """
-    lines = list(map(lambda item: item.strip(), input))
-    lines = list(filter(None, lines))
-    lines_as_string = "".join(lines)
-    return json.loads(lines_as_string)
+        if (op == "NONE"):
+            return
 
-def main():
-    params = clean_input(sys.stdin.readlines())
-    print(params["description"])
-    puz = Puzzle(params["root"], params["groups"], params["clues"])
-    puz.run()
+        if (op == "MIN" or op == "ALL"):
+            print("\n\nMinimized formula:")
+            print(self.translate_f(self.eval_espresso()))
 
-if __name__ == "__main__":
-  main()
+        if (op == "CLUESET" or op == "ALL"):
+            print("\n\nSets of clues that can be removed to still provide a single solution:")
+            print(self.extra_clues(rules))
+
+        if (op == "ALT" or op == "ALL"):
+            print("\n\nAlternative equivalent clueset example:")
+            pprint(self.alt_clueset())
