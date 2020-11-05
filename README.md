@@ -38,7 +38,9 @@ will print None.
 ## Puzzle data definition
 The Puzzle class serves as a representation of a logic grid puzzle and has functions to perform
 various logical computations on the puzzle, including minimizing the formula, determining redundant
-clues, and creating equivalent alternate clues.
+clues, and creating equivalent alternate clues. English puzzle clues must be translated to the
+formal representation of this program, and all computations and results are in the context of
+this representation.
 
 **Representation of a logic puzzle:**
 
