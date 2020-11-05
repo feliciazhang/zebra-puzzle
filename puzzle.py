@@ -1,8 +1,3 @@
-"""
-Approach based on Raymond Hettinger's Einstein puzzle solution:
-https://rhettinger.github.io/einstein.html#code-for-the-einstein-puzzle
-"""
-
 from pyeda.inter import And, Or, OneHot, exprvars, espresso_exprs
 from pprint import pprint
 import re
@@ -13,13 +8,28 @@ XAWAY = 'XAWAY'
 ISAT = 'ISAT'
 NOTAT = 'NOTAT'
 
+
+"""
+The Puzzle class serves as a representation of a logic grid puzzle and has functions to perform
+various logical computations on the puzzle, including minimizing the formula, determining redundant
+clues, and creating equivalent alternate clues.
+
+Representation of a logic puzzle:
+X - a multidimensional list of variables that are pyeda expressions, representing the puzzle variables.
+    Each variable is in the format of 'value_root' in english, meaning that value belongs with this root value.
+    Variables in X are identified by 3 indices X[x,y,z] where (x,y) refers to a value in the list of groups (2d list),
+    and z is the index of the root value associated.
+root_group List<str> - one of the puzzle categories, normally chosen as the one with comparable (eg numerical) values
+groups List<List<str>> - the other puzzle categories
+clueset List<Clue> - all puzzle clues, formatted as described in README
+"""
 class Puzzle:
     root_group = []
     groups = []
     clueset = []
+    X = None
     items_per = 0
     formula = []
-    X = None
 
     def __init__(self, root_group, groups, clueset):
         self.items_per = len(root_group)
@@ -33,6 +43,7 @@ class Puzzle:
         """
         Gets the list indices of the non-root group value given as a tuple
         :param value: str- name of a value in one of the puzzle categories
+        :return Tuple<int, int>: where the two indices represent the coordinates of the given value in self.groups
         """
         group_id = ([(idx1, idx2)
                     for idx1, category in enumerate(self.groups)
@@ -43,6 +54,8 @@ class Puzzle:
         """
         Translates and English variable in the 'value_root' form to an id tuple (x, y, z),
         where x,y referes to the indices of the 2D groups list, and z is the index of the root category
+        :param var: str- an English variable name to translate
+        :return Tuple<int, int, int>: the indices for the variable in expression form
         """
         var_split = var.split("_")
         root_idx = self.root_group.index(var_split[1])
@@ -54,6 +67,7 @@ class Puzzle:
         """
         Translate expr formula id to its corresponding english variable
         :param fid: str- the given expr formula id in the format 'x[a,b,c]'
+        :return str: the English name for the expression variable in the form "var_root"
         """
         index_only = fid[2:7].split(',')
         id = [int(i) for i in index_only]
@@ -64,8 +78,8 @@ class Puzzle:
 
     def only_one_root(self):
         """
-        Returns the formula where every group value can only belong to one root value
-        in dnf form
+        Gets the formula where every group value can only belong to one root value
+        :return List<Expr>: a list of subformulae that when Anded together creates the formula for this rule
         """
         form = []
         for group in range(0, len(self.groups)):
@@ -78,8 +92,8 @@ class Puzzle:
 
     def one_in_each(self):
         """
-        Returns the formula where every value in a group must belong to different root values
-        in dnf form
+        Gets the formula where every value in a group must belong to different root values
+        :return List<Expr>: a list of subformulae that when Anded together creates the formula for this rule
         """
         form = []
         for group in range(0, len(self.groups)):
@@ -93,6 +107,9 @@ class Puzzle:
     def are_same(self, value1, value2):
         """
         Returns the formula where the two given (non-root) values are a match-- they occur at the same root value
+        :param value1: str- an english variable that is in self.groups
+        :param value1: str- an english variable that is in self.groups, that is not in the same category as value1
+        :return Expr: the formula for this clue
         """
         (group_1, val_1) = self.get_val_tuple(value1)
         (group_2, val_2) = self.get_val_tuple(value2)
@@ -104,6 +121,9 @@ class Puzzle:
     def are_not(self, value1, value2):
         """
         Returns the formula where the two given (non-root) values are a not-- they do not occur at the same root value
+        :param value1: str- an english variable that is in self.groups
+        :param value1: str- an english variable that is in self.groups, that is not in the same category as value1
+        :return Expr: the formula for this clue
         """
         (group_1, val_1) = self.get_val_tuple(value1)
         (group_2, val_2) = self.get_val_tuple(value2)
@@ -117,6 +137,7 @@ class Puzzle:
         Returns the formula where the given non root value is at the given root value
         :param value: str- the non root value that matches with the root value
         :param root_val: str- the root value that matches with the given category value
+        :return Expr: the formula for this clue
         """
         (group, val) = self.get_val_tuple(value)
         idx = self.root_group.index(root_val)
@@ -127,6 +148,7 @@ class Puzzle:
         Returns the formula where the given non root value is not at the given root value
         :param value: str- the non root value that does not match with the root value
         :param root_val: str- the root value that does not match with the given category value
+        :return Expr: the formula for this clue
         """
         (group, val) = self.get_val_tuple(value)
         idx = self.root_group.index(root_val)
@@ -142,6 +164,7 @@ class Puzzle:
                       eg. for values [$2, $4, $6], $2 more is 1 step, $4 is 2 steps.
         :param val1: str- one of the non root values being compared
         :param val2: str- one of the non root values being compared
+        :return Expr: the formula for this clue
         """
         (group_1, v_1) = self.get_val_tuple(val1)
         (group_2, v_2) = self.get_val_tuple(val2)
@@ -174,11 +197,12 @@ class Puzzle:
 
         return (sol, count)
 
-    def eval_clues(self, clue):
+    def eval_clue(self, clue):
         """
         Returns the boolean formula for the given clue based on its type and values
+        Raises an exception if the clue is not of a valid type
         :param clue: dict- a clue in the format of a proper JSON Clue
-        :return:
+        :return Expr: boolean formula for the given clue
         """
         clue_type = clue["type"]
         clue_args = clue["vals"]
@@ -193,7 +217,7 @@ class Puzzle:
         elif (clue_type == NOTAT):
             return self.is_not_at(clue_args[0], clue_args[1])
         else:
-            return None
+            raise Exception("Invalid clue type ", clue["type"])
 
     def rules_dnf(self):
         """
@@ -250,7 +274,7 @@ class Puzzle:
         :return List<List<int>>: a list of sets of removable clues where the clue is represented by the
                         index at which it appears in the inputted clue list starting from 0
         """
-        clue_f = [self.eval_clues(clue) for clue in self.clueset]
+        clue_f = [self.eval_clue(clue) for clue in self.clueset]
         return self.extra_clues_help(rules, [], clue_f)
 
     def get_same_mapping(self):
@@ -318,7 +342,12 @@ class Puzzle:
         """
         rules = self.rules_dnf()
         self.formula.append(rules)
-        clue_form = [self.eval_clues(clue) for clue in self.clueset]
+        try:
+            clue_form = [self.eval_clue(clue) for clue in self.clueset]
+        except Exception as e:
+            print("Invalid input: check the format of puzzle clues")
+            print(e)
+            return
         self.formula = self.formula + clue_form
         self.formula = And(*[f.to_dnf() for f in self.formula ])
 
@@ -334,7 +363,7 @@ class Puzzle:
             print("\n\nMinimized formula:")
             print(self.translate_f(self.eval_espresso()))
 
-        if (op == "CLUESET" or op == "ALL"):
+        if (op == "RED" or op == "ALL"):
             print("\n\nSets of clues that can be removed to still provide a single solution:")
             print(self.extra_clues(rules))
 

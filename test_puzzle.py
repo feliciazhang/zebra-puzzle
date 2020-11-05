@@ -102,6 +102,21 @@ class LogicTest(unittest.TestCase):
         no_puzzle = P.Puzzle([], [], [])
         self.assertFalse(no_puzzle.alt_clueset())
 
+    def test_only_one_root(self):
+        small_puzzle = P.Puzzle(["1", "2"], [["a", "b"]], [])
+        sx = small_puzzle.X
+        root_rule_form = (And( Or( And(sx[0,0,0], ~sx[0,0,1]), And(~sx[0,0,0], sx[0,0,1])),
+        Or( And(sx[0,1,0], ~sx[0,1,1]), And(~sx[0,1,0], sx[0,1,1]))))
+
+        self.assertTrue(And(*small_puzzle.only_one_root()).equivalent(root_rule_form))
+
+    def test_eval_clue(self):
+        clue = {
+            "type": "ISAT",
+            "vals": ["laser", "1"]
+        }
+        self.assertTrue(self.ex_puzzle.eval_clue(clue).equivalent(self.ex_puzzle.X[1, 0, 0]))
+        self.assertRaises(Exception, self.ex_puzzle.eval_clue, { "type": "asd" })
 
 
 if __name__ == "__main__":

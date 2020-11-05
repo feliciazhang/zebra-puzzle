@@ -17,7 +17,7 @@ def clean_input(input):
 
 def main():
     parser = argparse.ArgumentParser(description='logic puzzle computations')
-    parser.add_argument('type', type=str, help="type of puzzle computation. one of 'MIN' 'CLUESET' 'ALT' or ALL")
+    parser.add_argument('type', type=str, help="type of puzzle computation. one of 'MIN' 'RED' 'ALT' or ALL")
     args = parser.parse_args()
 
     params = clean_input(sys.stdin.readlines())
