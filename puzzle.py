@@ -190,7 +190,7 @@ class Puzzle:
         :return Tuple<List<str>, int>: the solution to the puzzle as a list of english variable names and
                                 the number of possible solutions there are in this puzzle
         """
-        solved = self.formula.satisfy_one()
+        solved = self.formula.satisfy_one() or {}
         sol = [self.fid_to_var(str(var)) for var in list(solved.keys()) if solved[var] == 1]
         sol.sort(key = lambda var: var.split('_')[-1])
         count = self.formula.satisfy_count()
@@ -292,24 +292,24 @@ class Puzzle:
 
         return sames
 
-    def new_xaway_clue(self, sames, clue_vals):
+    def new_clue(self, sames, clue):
         """
-        Creates a new equivalent XAWAY clue by replacing the given clue values with other variables
+        Creates a new equivalent clue of the same type by replacing the given clue values with other variables
         that are known to be at the same root based on the given sames mapping.
         If there are no alternate mappings, then returns None
         :param sames: Dict- the SAMEAS variable mapping from the clue set
-        :param clue_vals: List- the vals field of a XAWAY clue
-        :return Dict: A full XAWAY clue in the standard json format that is equivalent to the given values or None
+        :param clue: List- the vals field of a clue that is not type SAME
+        :return Dict: A full clue in the standard json format that is equivalent to the given values or None
         """
-        val0 = sames.get(clue_vals[0])
-        val1 = sames.get(clue_vals[1])
+        vals = clue["vals"]
+        new_vals = [sames.get(v, v) for v in vals]
 
-        if (not val0 and not val1):
+        if (vals == new_vals):
             return None
 
         return {
-            "type": XAWAY,
-            "vals": [val0 or clue_vals[0], val1 or clue_vals[1], clue_vals[2]]
+            "type": clue["type"],
+            "vals": new_vals
         }
 
     def alt_clueset(self):
@@ -325,8 +325,8 @@ class Puzzle:
         has_changes = False
 
         for clue in self.clueset:
-            if (clue["type"] == XAWAY):
-                alt = self.new_xaway_clue(sames, clue["vals"])
+            if (clue["type"] != SAME and clue["type"] != ISAT):
+                alt = self.new_clue(sames, clue)
                 if alt:
                     new_clues.append(alt)
                     has_changes = True

@@ -69,18 +69,32 @@ class LogicTest(unittest.TestCase):
         }
         self.assertEqual(self.ex_puzzle.get_same_mapping(), sames)
 
-    def test_new_xaway_clue(self):
+    def test_new_clue(self):
         sames = self.ex_puzzle.get_same_mapping()
-        clue = ["Batman", "laser", 1]
-        clue_nomatch = ["Ruby", "sleep", -1]
-
+        clue = {
+            "type": "XAWAY",
+            "vals": ["Batman", "laser", 1]
+        }
         new_clue = {
             "type": "XAWAY",
             "vals": ["ball", "Dibii", 1]
         }
+        clue_nomatch = {
+            "type": "XAWAY",
+            "vals": ["Ruby", "sleep", -1]
+        }
+        clue_not = {
+            "type": "NOTSAME",
+            "vals": ["ball", "Dibii"]
+        }
+        new_clue_not = {
+            "type": "NOTSAME",
+            "vals": ["Batman", "laser"]
+        }
 
-        self.assertEqual(self.ex_puzzle.new_xaway_clue(sames, clue), new_clue)
-        self.assertFalse(self.ex_puzzle.new_xaway_clue(sames, clue_nomatch))
+        self.assertEqual(self.ex_puzzle.new_clue(sames, clue), new_clue)
+        self.assertEqual(self.ex_puzzle.new_clue(sames, clue_not), new_clue_not)
+        self.assertFalse(self.ex_puzzle.new_clue(sames, clue_nomatch))
 
     def test_alt_clueset(self):
         alt =[

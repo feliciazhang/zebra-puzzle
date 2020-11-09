@@ -9,7 +9,6 @@ MUST DO
 NICE TO DO
 - add greater than/less than clue type
 - update vocations puzzle input to use the new type
-- update alt fxn to be more general and replace new type too
 
 ## Directory structure (sarah)
 
