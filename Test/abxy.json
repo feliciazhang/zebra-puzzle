@@ -1,0 +1,11 @@
+{
+    "description": "ABxy Example\n\nCategories: *(x,y) (A,B)\n\nClues:\n1.(A,x)\n",
+    "root": ["x", "y"],
+    "groups": [["A", "B"]],
+    "clues": [
+        {
+            "type": "ISAT",
+            "vals": ["A", "x"]
+        }
+    ]
+}
