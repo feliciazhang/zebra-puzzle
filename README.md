@@ -55,7 +55,7 @@ this representation.
 
 **Representation of a logic puzzle:**
 
-`X` - a multidimensional list of variables that are [`pyeda`](https://pyeda.readthedocs.io/en/latest/)
+`X` - a multidimensional list of variables that are [`PyEDA`](https://pyeda.readthedocs.io/en/latest/)
 boolean variables, representing the puzzle variables.
 Each variable is in the format of 'value_root' in english, meaning that value belongs with this root value.
 Variables in X are identified by 3 indices `X[x,y,z]` where (x,y) refers to a value in the list of groups (2d list),
@@ -72,4 +72,41 @@ for this would be `X[1,0,0]`
 
 `clueset` `List<Clue>` - all puzzle clues, formatted as pythonized JSON described below
 
-## Puzzle input format and clues (sarah)
+## Puzzle input format and clues
+
+### **Input Puzzle Format**
+The input for the program is in json format with the following fields.
+
+| Field       	| Datatype               	| Value                                                	|
+|-------------	|------------------------	|------------------------------------------------------	|
+| _description_ 	| string                 	| description of the puzzle, category names, clues                     	|
+| _root_        	| list of string         	| values in the "root" category                        	|
+| _groups_      	| list of list of string 	| Other puzzles values listed by category              	|
+| _clues_       	| dictionary             	| dictionary containing "type" and "vals"              	|
+<br>
+
+#### **_Clues_ Subsection**
+| Field       	| Datatype               	| Value                                                	|
+|-------------	|------------------------	|------------------------------------------------------	|
+| _type_        	| string                 	| clue identifier string                               	|
+| _vals_        	| list of string         	| values in the clue, ordered if clue type requires it 	|
+
+Example of JSON input:
+```
+{
+    "description": "Example\n\nCategories: *RootCategory, FirstCategory,SecondCategory\n\nClues:\n1.first_clue\n2.second_clue\n",
+    "root": ["1", "2", "3"],
+    "groups": [["first", "second", "third"], ["A", "B", "C"]],
+    "clues": [
+        {
+            "type": "ISAT",
+            "vals": ["A", "1"]
+        },
+        {
+            "type": "SAME",
+            "vals": ["first", "B"]
+        }
+    ]
+}
+```
+### **Clue Types**
