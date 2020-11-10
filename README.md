@@ -79,22 +79,22 @@ The input for the program is in json format with the following fields.
 
 | Field       	| Datatype               	| Value                                                	|
 |-------------	|------------------------	|------------------------------------------------------	|
-| _description_ 	| string                 	| description of the puzzle, category names, clues                     	|
-| _root_        	| list of string         	| values in the "root" category                        	|
-| _groups_      	| list of list of string 	| Other puzzles values listed by category              	|
-| _clues_       	| dictionary             	| dictionary containing "type" and "vals"              	|
+| _description_ 	| `str`                 	| description of the puzzle, category names, clues                     	|
+| _root_        	| `List<str>`        	| values in the "root" category                        	|
+| _groups_      	| `List<List<str>>` 	| Other puzzles values listed by category              	|
+| _clues_       	| `List<Clue>`             	| dictionary containing "_type_" and "_vals_"              	|
 <br>
 
-#### **_Clues_ Subsection**
+#### **_Clue_**
 | Field       	| Datatype               	| Value                                                	|
 |-------------	|------------------------	|------------------------------------------------------	|
-| _type_        	| string                 	| clue identifier string                               	|
-| _vals_        	| list of string         	| values in the clue, ordered if clue type requires it 	|
+| _type_        	| `str`                 	| clue identifier string                               	|
+| _vals_        	| `List<str>`         	| values in the clue, list order dependent on clue type 	|
 
 Example of JSON input:
 ```
 {
-    "description": "Example\n\nCategories: *RootCategory, FirstCategory,SecondCategory\n\nClues:\n1.first_clue\n2.second_clue\n",
+    "description": "Example\n\nCategories:*RootCategory,FirstCategory,SecondCategory\n\nClues:\n1.first_clue\n2.second_clue\n",
     "root": ["1", "2", "3"],
     "groups": [["first", "second", "third"], ["A", "B", "C"]],
     "clues": [
@@ -110,3 +110,11 @@ Example of JSON input:
 }
 ```
 ### **Clue Types**
+
+| Clue ID 	| Description                                                                                         	| _vals_ order                           	|
+|---------	|-----------------------------------------------------------------------------------------------------	|----------------------------------------	|
+| *SAME*    	| Two values from groups categories belong to the same unknown root value                             	| _not ordered_                            	|
+| *NOTSAME* 	| Two values from the groups categories do **not** belong to the same unknown root value              	| _not ordered_                            	|
+| *XAWAY*   	| Compares a value from the groups categories that is some number of value steps away to a root value 	| `[groups_value<str>, root_value<str>, steps_away<int>]` 	|
+| *ISAT*    	| A given value from groups categories belongs to a given root value                                  	| `[groups_value<str>, root_value<str>]`             	|
+| *NOTAT*   	| A given value from groups categories does **not** belong to a given root value                      	| `[groups_value<str>, root_value<str>]`             	|
