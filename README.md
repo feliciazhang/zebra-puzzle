@@ -5,11 +5,11 @@
 ### _/**zebra-puzzle**_
 `Makefile` : Setup for running the _`logicpuzzle`_ code.
 
-`puzzle.py` : _**Puzzle**_ class and functions for using [PyEDA](https://pyeda.readthedocs.io/en/latest/index.html), solving logic puzzles, and clue manipulation.
+`puzzle.py` : Puzzle class and functions for using [PyEDA](https://pyeda.readthedocs.io/en/latest/index.html), solving logic puzzles, and clue manipulation.
 
 `logicpuzzle` : Executable for running the logic puzzle experiments.
 
-`test_puzzle.py` : Tests functionality of the _**Puzzle**_ class.
+`test_puzzle.py` : Tests functionality of the Puzzle class.
 
 `README.md` : Instructions and information (_this file_).
 
