@@ -1,16 +1,28 @@
 # Logic Grid Puzzle computations and experiments
 ### Felicia Zhang and Sarah Coffen for CS2800
 
-# TODOs (delete this later)
-MUST DO
-- write the whole report lmao
-- write this readme
+## Directory Structure
+### _/**zebra-puzzle**_
+`Makefile` : Setup for running the _`logicpuzzle`_ code.
 
-NICE TO DO
-- add greater than/less than clue type
-- update vocations puzzle input to use the new type
+`puzzle.py` : _**Puzzle**_ class and functions for using [PyEDA](https://pyeda.readthedocs.io/en/latest/index.html), solving logic puzzles, and clue manipulation.
 
-## Directory structure (sarah)
+`logicpuzzle` : Executable for running the logic puzzle experiments.
+
+`test_puzzle.py` : Tests functionality of the _**Puzzle**_ class.
+
+`README.md` : Instructions and information (_this file_).
+
+
+### _/zebra-puzzle/**Test**_
+`abxy.json` : 2x2 puzzle input file mentioned in the report
+
+`cats.json` : 3x4 puzzle input file for the ["Cats in Spring"  puzzle from _aha!Puzzles_](https://www.ahapuzzles.com/logic/logic-puzzles/cats-in-spring/)
+
+`cyclists.json` : 3x4 puzzle input file for the ["The Bike Race"  puzzle from _aha!Puzzles_](https://www.ahapuzzles.com/logic/logic-puzzles/the-bike-race/)
+
+`vocations.json` : 3x4 puzzle input file for the ["Chosen Vocation"  puzzle from _aha!Puzzles_](https://www.ahapuzzles.com/logic/logic-puzzles/chosen-vocation/)
+
 
 ## Usage
 Setup: `make`
