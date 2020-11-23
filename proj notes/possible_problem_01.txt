@@ -1,0 +1,77 @@
+Running this defthm to help prove what the row-helper generates runs through alot of subgoals and hangs / fails
+ACL2S !>EVENT 
+(defthm row-helper-next
+  (implies (and (lonp l)
+                (> (llen l) 1)
+                (natp n)
+                (< n (1- (llen l))))
+           (equal (nth n (row-helper l)) (+ (nth n l) (nth (1+ n) l)))))
+
+ACL2 Warning [Double-rewrite] in ( DEFTHM ROW-HELPER-NEXT ...):  In
+a :REWRITE rule generated from ROW-HELPER-NEXT, equivalence relation
+ACL2::LIST-EQUIV is maintained at two problematic occurrences of variable
+L in the right-hand side, but not at any binding occurrence of L. 
+Consider replacing those two occurrences of L in the right-hand side
+with (DOUBLE-REWRITE L).  See :doc double-rewrite for more information
+on this issue.
+
+
+<< Starting proof tree logging >>
+Goal'
+Subgoal 4
+Subgoal 4.5
+Subgoal 4.5.2
+Subgoal 4.5.1
+Subgoal 4.5.1.2
+Subgoal 4.5.1.1
+Subgoal 4.5.1.1.2
+Subgoal 4.5.1.1.1
+Subgoal 4.5.1.1.1.2
+Subgoal 4.5.1.1.1.1
+Subgoal 4.5.1.1.1.1.2
+Subgoal 4.5.1.1.1.1.1
+Subgoal 4.5.1.1.1.1.1.2
+Subgoal 4.5.1.1.1.1.1.1
+Subgoal 4.5.1.1.1.1.1.1.2
+Subgoal 4.5.1.1.1.1.1.1.1
+Subgoal 4.5.1.1.1.1.1.1.1.2
+Subgoal 4.5.1.1.1.1.1.1.1.1
+Subgoal 4.5.1.1.1.1.1.1.1.1.2
+Subgoal 4.5.1.1.1.1.1.1.1.1.1
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.2
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.2
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.2
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.2
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.2
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.2
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.2
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.2
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.2
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.2
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.2
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.2
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.2
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.2
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.2
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.2
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.2
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.2
+Subgoal 4.5.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1
+ 
