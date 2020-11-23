@@ -1,5 +1,5 @@
 Running the main thm fails? not entirely sure why, but could be due to the call depth limit.
-There are alot of subgoals for this section as well.
+There are a lot of subgoals for this section as well.
 Also, is the end thm set up correctly? i.e. Should it be thm?
 
 (thm (implies (and (natp n) (<= 2 n))
