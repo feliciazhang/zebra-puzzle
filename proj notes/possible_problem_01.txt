@@ -1,4 +1,4 @@
-Running this defthm to help prove what the row-helper generates runs through alot of subgoals and hangs / fails
+Running this defthm to help prove what the row-helper generates runs through a lot of subgoals and hangs / fails
 ACL2S !>EVENT 
 (defthm row-helper-next
   (implies (and (lonp l)
