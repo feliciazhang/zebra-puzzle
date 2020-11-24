@@ -157,7 +157,21 @@ Sarah Coffen
 (defthm main-base
   (implies (and (natp n) (equal 2 n))
            (equal (nth 0 (pascal-row 1))
-                  (nth 2 (nth 0 (pascal-triangle 2))))))#|ACL2s-ToDo-Line|#
+                  (nth 2 (nth 0 (pascal-triangle 2))))))
+(set-gag-mode nil)
+:brr t
+(test? (IMPLIES (AND (INTEGERP N)
+              (<= 0 N)
+              (NOT (ZP N))
+              (IMPLIES (AND (NATP (+ -1 N)) (<= 2 (+ -1 N)))
+                       (EQUAL (NTH (+ -2 -1 N)
+                                   (PASCAL-ROW (+ -1 -1 N)))
+                              (NTH 2 (NTH 0 (PASCAL-TRIANGLE (+ -1 N))))))
+              (<= 2 N))
+         (EQUAL (NTH (+ -2 N) (PASCAL-ROW (+ -1 N)))
+                (NTH 2 (NTH 0 (PASCAL-TRIANGLE N))))))
+
+(defdata memo-table (map nat lon))#|ACL2s-ToDo-Line|#
 
 
 (thm (implies (and (natp n) (<= 2 n))
