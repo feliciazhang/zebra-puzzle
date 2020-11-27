@@ -99,9 +99,11 @@ Sarah Coffen
 
 |#
 :logic
-
+(set-gag-mode nil)
+:brr t
 (defdata lon (listof nat))
 (defdata llon (listof lon))
+(defdata memo-table (map nat lon))
 
 (definec pascal-row-h (n :nat m :nat a :nat) :lon
   (if (< n m)
@@ -123,16 +125,51 @@ Sarah Coffen
 ; dummy guess at measure function
 (definec measure-pt (n :nat) :nat
  (expt 2 n))
-   
+
+#|
 (definec pascal-triangle (n :nat) :llon
   (declare (xargs :measure (if (natp n) (measure-pt n) 0)))
   (cond ((zp n) '((1)))
         (t (cons (new-row (pascal-triangle (- n 1)))
                  (pascal-triangle (- n 1))))))
+|#
+
+(definec pascal-triangle-acc-h (n :nat acc :llon) :llon
+  (if (zp n)
+    acc
+    (pascal-triangle-acc-h (- n 1) (cons (new-row acc) acc))))
+
+(definec pascal-triangle-acc (n :nat) :llon
+  (pascal-triangle-acc-h n '((1))))#|ACL2s-ToDo-Line|#
+
+
+
+(defthm subgoal-aa
+  (IMPLIES (AND (INTEGERP N) (<= 2 N))
+         (EQUAL (NTH (+ -2 N)
+                     (CONS 1 (PASCAL-ROW-H (+ -1 N) 2 1)))
+                (NTH 2
+                     (CAR (PASCAL-TRIANGLE-ACC-H N '((1))))))))
+
+(thm (implies (and (natp n) (<= 2 n))
+              (equal (nth (- n 2) (pascal-row (- n 1)))
+                     (nth 2 (nth 0 (pascal-triangle-acc n))))))
+
+(definec pascal-triangle-memo-h (n :nat m :memo-table) :llon
+  (cond [(zp n) '()]
+        [(in n m) (cons (lookup n m) (pascal-triangle-memo-h (- n 1) m))]
+    
+
+
+
+(definec pascal-triangle-memo (n :nat) :llon
+  (pascal-triangle-memo-h n '()))
+
+  
 
 ;; For n<2, the output of pascal-triangle doesn't have the third row and is comprised only of 1's
 ;; n = 0, ((1)); n = 1,((1 1) (1))
-
+#|
 (defthm row-helper-empty
   (implies (and (lonp l)
                 (or (endp l)
@@ -158,8 +195,7 @@ Sarah Coffen
   (implies (and (natp n) (equal 2 n))
            (equal (nth 0 (pascal-row 1))
                   (nth 2 (nth 0 (pascal-triangle 2))))))
-(set-gag-mode nil)
-:brr t
+
 (test? (IMPLIES (AND (INTEGERP N)
               (<= 0 N)
               (NOT (ZP N))
@@ -170,10 +206,8 @@ Sarah Coffen
               (<= 2 N))
          (EQUAL (NTH (+ -2 N) (PASCAL-ROW (+ -1 N)))
                 (NTH 2 (NTH 0 (PASCAL-TRIANGLE N))))))
-
-(defdata memo-table (map nat lon))#|ACL2s-ToDo-Line|#
-
+|#
 
 (thm (implies (and (natp n) (<= 2 n))
               (equal (nth (- n 2) (pascal-row (- n 1)))
-                     (nth 2 (nth 0 (pascal-triangle n))))))
+                     (nth 2 (nth 0 (pascal-triangle-acc n))))))
