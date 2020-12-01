@@ -126,14 +126,13 @@ for instance: (pascal-triangle 4) => ((1 3 3 1) (1 2 1) (1 1) (1))
 
 ;; measure function for pascal-triangle
 (definec measure-pt (n :nat) :nat
-  n)#|ACL2s-ToDo-Line|#
-
+  n)
 
 ;; Creates a Pascal's triangle with n rows as a list, where each element is a list
 ;; representing the numbers in one row of the triangle. The first item is the
 ;; bottom-most (longest) row of the triangle.
 (definec pascal-triangle (n :nat) :llon
-  (declare (xargs :measure (if (natp n) (measure-pt n) 0)))
+  ;(declare (xargs :measure (if (natp n) (measure-pt n) 0)))
   (cond ((zp n) '())
         (t (let ((rest-triangle (pascal-triangle (- n 1))))
                  (cons (new-row rest-triangle) rest-triangle)))))
@@ -168,37 +167,55 @@ for instance: (pascal-triangle 4) => ((1 3 3 1) (1 2 1) (1 1) (1))
 (check= (pascal-triangle-acc 1) '((1)))
 (check= (pascal-triangle-acc 2) '((1 1) (1)))
 (check= (pascal-triangle-acc 5) '((1 4 6 4 1) (1 3 3 1) (1 2 1) (1 1) (1)))
-(check= (pascal-triangle-acc 6) (pascal-triangle 6))
+(check= (pascal-triangle-acc 6) (pascal-triangle 6))#|ACL2s-ToDo-Line|#
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; LEMMATA ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; THEOREM 1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 #|
-(defthm subgoal-aa
-  (IMPLIES (AND (INTEGERP N) (<= 2 N))
-         (EQUAL (NTH (+ -2 N)
-                     (CONS 1 (triangular-seq-H (+ -1 N) 2 1)))
-                (NTH 2
-                     (CAR (PASCAL-TRIANGLE-ACC-H N '((1))))))))
+THEOREM: two functions that generate Pascal's triangle, one purely recursive and one
+using an accumulator, are equivalent.
 
-(thm (implies (and (natp n) (<= 2 n))
-              (equal (nth (- n 2) (triangular-seq (- n 1)))
-                     (nth 2 (nth 0 (pascal-triangle-acc n))))))
-
-
-(definec pascal-triangle-memo-h (n :nat m :memo-table) :llon
-  (cond [(zp n) '()]
-        [(in n m) (cons (lookup n m) (pascal-triangle-memo-h (- n 1) m))]
-    
-
-
-
-(definec pascal-triangle-memo (n :nat) :llon
-  (pascal-triangle-memo-h n '()))
+(defthm equal-pascal
+  (implies (natp n)
+           (equal (pascal-triangle n) (pascal-triangle-acc n))))
 |#
-  
+
+;; Lemma 1: Relating the accumulator to the recursive pascale triangle function
+(defthm equal-pascal-acc
+  (implies (and (natp n) (natp c) (>= n c))
+           (equal (pascal-triangle n) (pascal-triangle-acc-h c (pascal-triangle (- n c))))))
+
+;; theorem equal-pascal as described above
+(defthm equal-pascal
+  (implies (natp n)
+           (equal (pascal-triangle n) (pascal-triangle-acc n))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; THEOREM 2 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#|
+THEOREM: the value in the third diagonal of Pascal's triangle (the triangular numbers)
+of a given row is the same as the last number from the list returned by the triangular-seq function
+There must be more than 2 rows in the triangle in order to have a third triangular diagonal
+
+(defthm triangular-diagonal
+  (implies (and (natp n) (> n 2))
+           (equal (nth (- n 2) (triangular-seq (- n 1)))
+                  (nth 2 (nth 0 (pascal-triangle-acc n))))))
+|#
+
+;; theorem triangular-diagonal as described above
+(defthm triangular-diagonal
+  (implies (and (natp n) (> n 2))
+           (equal (nth (- n 2) (triangular-seq (- n 1)))
+                  (nth 2 (nth 0 (pascal-triangle-acc n))))))
+
 
 ;; For n<2, the output of pascal-triangle doesn't have the third row and is comprised only of 1's
 ;; n = 0, ((1)); n = 1,((1 1) (1))
+
+
+
 #|
 (defthm row-helper-empty
   (implies (and (lonp l)
@@ -237,21 +254,3 @@ for instance: (pascal-triangle 4) => ((1 3 3 1) (1 2 1) (1 1) (1))
          (EQUAL (NTH (+ -2 N) (triangular-seq (+ -1 N)))
                 (NTH 2 (NTH 0 (PASCAL-TRIANGLE N))))))
 |#
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; MAIN THEOREMS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-#|
-THEOREM: two functions that generate Pascal's triangle, one purely recursive and one
-using an accumulator, are equivalent.
-|#
-(thm (implies (natp n)
-              (equal (pascal-triangle n) (pascal-triangle-acc n))))
-
-#|
-THEOREM: the value in the third diagonal of Pascal's triangle (the triangular numbers)
-of a given row is the same as the last number from the list returned by the triangular-seq function
-There must be more than 2 rows in the triangle in order to have a third triangular diagonal
-|#
-(thm (implies (and (natp n) (> n 2))
-              (equal (nth (- n 2) (triangular-seq (- n 1)))
-                     (nth 2 (nth 0 (pascal-triangle-acc n))))))
