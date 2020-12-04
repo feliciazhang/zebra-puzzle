@@ -88,26 +88,6 @@ for instance: (pascal-triangle 4) => ((1 3 3 1) (1 2 1) (1 1) (1))
 
 (defdata lon (listof nat))
 (defdata llon (listof lon))
-(defdata memo-table (map nat lon))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;; TRIANGULAR SEQUENCE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Helper for generating the triangular sequence
-(definec triangular-seq-h (n :nat m :nat a :nat) :lon
-  (if (zp n)
-    '()
-    (cons (+ a m) (triangular-seq-h (1- n) (1+ m) (+ a m)))))
-
-;; Returns a list of n numbers that are the first n numbers of the triangular sequence
-;; 1, 3, 6, 10...
-(definec triangular-seq (n :nat) :lon
-  (triangular-seq-h n 1 0))
-
-
-(check= (triangular-seq 0) '())
-(check= (triangular-seq 1) '(1))
-(check= (triangular-seq 4) '(1 3 6 10))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; PASCAL'S TRIANGLE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -124,15 +104,10 @@ for instance: (pascal-triangle 4) => ((1 3 3 1) (1 2 1) (1 1) (1))
 (definec new-row (triangle-list :llon) :lon
   (cons 1 (row-helper (car triangle-list))))
 
-;; measure function for pascal-triangle
-(definec measure-pt (n :nat) :nat
-  n)
-
 ;; Creates a Pascal's triangle with n rows as a list, where each element is a list
 ;; representing the numbers in one row of the triangle. The first item is the
 ;; bottom-most (longest) row of the triangle.
 (definec pascal-triangle (n :nat) :llon
-  ;(declare (xargs :measure (if (natp n) (measure-pt n) 0)))
   (cond ((zp n) '())
         (t (let ((rest-triangle (pascal-triangle (- n 1))))
                  (cons (new-row rest-triangle) rest-triangle)))))
@@ -190,22 +165,13 @@ using an accumulator, are equivalent.
   (implies (natp n)
            (equal (pascal-triangle n) (pascal-triangle-acc n))))
 
-;; Gets the third diagonal of the given Pascal's triangle (the third value of every row in the triangle)
-;; and returns these as a list.
-;; Only triangles with more than 2 rows will have a third diagonal.
-(definec get_3rd (tri :llon) :lon
-  (cond ((< (len tri) 3) nil)
-        (t (if (<= 3 (llen (car tri)))
-             (cons (nth 2 (car tri)) (get_3rd (cdr tri)))
-             (get_3rd (cdr tri))))))
-
-(check= (get_3rd (pascal-triangle 0)) '())
-(check= (get_3rd (pascal-triangle 1)) '())
-(check= (get_3rd (pascal-triangle 1)) '())
-(check= (get_3rd (pascal-triangle 6)) '(10 6 3 1))#|ACL2s-ToDo-Line|#
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; THEOREM 2 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Gets the third diagonal of the given Pascal's triangle (the third value of every row in the triangle)
+;; and returns these as a list.
+;; Only triangles with more than 2 rows will have a third diagonal.
 #|
 THEOREM: the value in the third diagonal of Pascal's triangle (the triangular numbers)
 of a given row is the same as the last number from the list returned by the triangular-seq function
@@ -213,16 +179,107 @@ There must be more than 2 rows in the triangle in order to have a third triangul
 
 (defthm triangular-diagonal
   (implies (and (natp n) (> n 2))
-           (equal (nth (- n 2) (triangular-seq (- n 1)))
-                  (nth 2 (nth 0 (pascal-triangle-acc n))))))
+           (equal (rev (triangular-seq (- n 2)))
+                  (get_3rd (pascal-triangle n)))))
 |#
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;; TRIANGULAR SEQUENCE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Helper for generating the triangular sequence
+(definec triangular-seq-h (n :nat m :nat a :nat) :lon
+  (if (zp n)
+    '()
+    (cons (+ a m) (triangular-seq-h (1- n) (1+ m) (+ a m)))))
+
+;; Returns a list of n numbers that are the first n numbers of the triangular sequence
+;; 1, 3, 6, 10...
+(definec triangular-seq (n :nat) :lon
+  (triangular-seq-h n 1 0))
+
+
+(check= (triangular-seq 0) '())
+(check= (triangular-seq 1) '(1))
+(check= (triangular-seq 4) '(1 3 6 10))
+
+(definec ts-new-h (n :nat) :nat
+  (if (zp n)
+    0
+    (+ n (ts-new-h (- n 1)))))
+
+(definec ts-new-list (n :nat) :lon
+  (if (zp n)
+    '()
+    (cons (ts-new-h n) (ts-new-list (- n 1)))))
+
+(check= (ts-new-list 0) '())
+(check= (ts-new-list 1) '(1))
+(check= (ts-new-list 4) '(10 6 3 1))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; THIRD DIAGONAL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Helper for is-pascal-shape
+(definec is-pascal-shape-h (tri :llon prev :nat) :bool
+  (cond ((endp tri) (equal 1 prev))
+        (t (and (equal (1- prev) (llen (car tri)))
+                (is-pascal-shape-h (cdr tri) (llen (car tri)))))))
+  
+;; Determines whether the given llon is in the shape of a triangle--
+;; each element in the list (each row) has length one longer then the next element
+;; ending at length 0
+(definec is-pascal-shape (tri :llon) :bool
+  (cond ((endp tri) t)
+        (t (is-pascal-shape-h (cdr tri) (llen (car tri))))))
+
+(check= (is-pascal-shape (pascal-triangle 0)) t)
+(check= (is-pascal-shape (pascal-triangle 4)) t)
+(check= (is-pascal-shape '((1 4 1) (1 3 3 1) (1))) nil)
+
+;;
+(definec get_3rd (tri :llon) :lon
+  :ic (is-pascal-shape tri)
+  (cond ((< (len tri) 3) nil)
+        (t (cons (nth 2 (car tri)) (get_3rd (cdr tri))))))
+
+(check= (get_3rd (pascal-triangle 0)) '())
+(check= (get_3rd (pascal-triangle 1)) '())
+(check= (get_3rd (pascal-triangle 1)) '())
+(check= (get_3rd (pascal-triangle 6)) '(10 6 3 1))
+
 
 ;; theorem triangular-diagonal as described above
+
 #|
-COMMENTED OUT BECAUSE THIS THEOREM DOES NOT CURRENTLY PASS IN ACL2
+(defthm triangle-is-triangle
+  (implies (natp n)
+           (is-pascal-shape (pascal-triangle n))))
+|#
+
+; this is wrong?
+#|
+(defun some-induction (x)
+  (or (zp x)
+      (equal x 1)
+      (equal x 2)
+      (some-induction (- x 1))))
+|#
+
+(defun some-induction (l)
+  (let ((x (len l)))
+  (or (zp x)
+      (equal x 1)
+      (equal x 2)
+      (some-induction (cdr l)))))#|ACL2s-ToDo-Line|#
+
+#|
+(defthm equal-triangular-seq-ts-new-list
+  (implies (natp n)
+           (equal (rev (triangular-seq n)) (ts-new-list n))))
+|#
 
 (defthm triangular-diagonal
-  (implies (and (natp n) (> n 2))
-           (equal (nth (- n 2) (triangular-seq (- n 1)))
-                  (nth 2 (nth 0 (pascal-triangle n))))))
-|#
+  (implies (and (natp n)
+                (> n 2))
+                (implies (equal tri (pascal-triangle n))
+                         (equal (ts-new-list (- n 2))
+                                (get_3rd tri)))))
+             ;:hints (("Goal" :induct (some-induction tri))))))
