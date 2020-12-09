@@ -156,6 +156,7 @@ using an accumulator, are equivalent.
 |#
 
 ;; Lemma 1: Relating the accumulator to the recursive pascale triangle function
+#|
 (defthm equal-pascal-acc
   (implies (and (natp n) (natp c) (>= n c))
            (equal (pascal-triangle n) (pascal-triangle-acc-h c (pascal-triangle (- n c))))))
@@ -164,6 +165,7 @@ using an accumulator, are equivalent.
 (defthm equal-pascal
   (implies (natp n)
            (equal (pascal-triangle n) (pascal-triangle-acc n))))
+|#
 
 
 
@@ -227,8 +229,9 @@ There must be more than 2 rows in the triangle in order to have a third triangul
 ;; each element in the list (each row) has length one longer then the next element
 ;; ending at length 0
 (definec is-pascal-shape (tri :llon) :bool
-  (cond ((endp tri) t)
-        (t (is-pascal-shape-h (cdr tri) (llen (car tri))))))
+  (cond ((endp tri) (equal (llen (car tri)) 0))
+        (t (and (equal (llen (car tri)) (llen tri)) (is-pascal-shape (cdr tri))))))
+        
 
 (check= (is-pascal-shape (pascal-triangle 0)) t)
 (check= (is-pascal-shape (pascal-triangle 4)) t)
@@ -268,18 +271,143 @@ There must be more than 2 rows in the triangle in order to have a third triangul
   (or (zp x)
       (equal x 1)
       (equal x 2)
-      (some-induction (cdr l)))))#|ACL2s-ToDo-Line|#
-
+      (some-induction (cdr l)))))
 #|
 (defthm equal-triangular-seq-ts-new-list
   (implies (natp n)
            (equal (rev (triangular-seq n)) (ts-new-list n))))
 |#
-
+#|
 (defthm triangular-diagonal
   (implies (and (natp n)
                 (> n 2))
-                (implies (equal tri (pascal-triangle n))
-                         (equal (ts-new-list (- n 2))
-                                (get_3rd tri)))))
-             ;:hints (("Goal" :induct (some-induction tri))))))
+           (equal (ts-new-list (- n 2))
+                  (get_3rd (pascal-triangle n))))
+  :hints (("Goal" :induct t)))
+|#
+
+(defthm row-helper-len
+  (implies (lonp l)
+           (equal (llen (row-helper l))
+                  (llen l))))
+
+(thm
+  (implies (natp n)
+           (let ((tri (pascal-triangle n)))
+             (equal (llen (car tri)) (llen tri))))
+  :hints (("Subgoal *1.1/5" :use row-helper-len)))
+
+
+(defthm triangle-is-triangle
+  (implies (natp n)
+           (is-pascal-shape (pascal-triangle n))))
+
+(definec last-third-diag (tri :llon) :nat
+  :ic (and (> (len tri) 2) (is-pascal-shape tri))
+  (nth 2 (car tri)))
+#|
+(defthm diag-1
+  (implies (and (natp n) (not (zp n)))
+           (equal (caar (pascal-triangle n)) 1)))
+|#
+(defthm diag-2-sum
+  (implies (and (natp n) (> n 0))
+           (equal (cadar (pascal-triangle (1+ n)))
+                  (+ (cadar (pascal-triangle n))
+                     (caar (pascal-triangle n))))))
+#|
+(thm
+  (implies (and (natp n) (> n 0))
+           (equal (cadar (pascal-triangle (1+ n)))
+                  (+ (cadar (pascal-triangle n)) 1))))
+|#
+(defthm diag-2
+  (implies (and (natp n) (> n 0))
+           (equal (cadar (pascal-triangle (1+ n))) n)))
+
+(defthm diag-3-help
+  (implies (and (natp n) (> n 0))
+           (equal (CAR (ROW-HELPER (CAR (PASCAL-TRIANGLE n)))) n)))
+
+(defthm diag-3-help-2
+  (implies (and (natp n) (> n 2))
+           (equal (CAR (ROW-HELPER (CAR (PASCAL-TRIANGLE n)))) n)))
+
+
+(defthm diag-3-pls
+  (implies (and (natp n) (natp c) (> (- n c) 2))
+           (equal (+ c (CAR (ROW-HELPER (CAR (PASCAL-TRIANGLE (- n c)))))) n)))
+;  :hints (("Goal" :use diag-3-help-2)))
+
+(definec triangle (n :nat) :nat
+  (if (zp n)
+    0
+    (+ (1- n) (triangle (- n 1)))))
+
+(check= (triangle 1) 0)
+(check= (triangle 5) 10)
+(check= (triangle 4) 6)
+#|
+(definec ind (x :nat) :bool
+  :ic (> x 1)
+  (or (equal x 2)
+      (ind (- x 1))))
+|#
+(defun ind (x)
+  (or (zp x)
+      (equal x 1) 
+      (equal x 2)
+      (ind (- x 1))))#|ACL2s-ToDo-Line|#
+
+
+(defthm triangular-diagonal
+  (implies (and (natp n) (> n 2))
+           (equal (triangle n)
+                  (last-third-diag (pascal-triangle (+ 1 n)))))
+  :hints (("Goal" :induct (ind n))))
+ ; :hints (("Subgoal *1/5.2.3.2''" :use diag-3-pls)))
+  
+(defthm triangular-diagonal
+  (implies (and (natp n) (> n 2))
+           (equal (+ (cadar (pascal-triangle n))
+                     (last-third-diag (pascal-triangle n)))
+                  (last-third-diag (pascal-triangle (+ 1 n))))))
+
+(defthm row-2-sum
+  (implies (and (llonp tri) (is-pascal-shape tri) (> (llen tri) 2))
+           (equal (nth 2 (new-row tri)) (+ (nth 1 (car tri)) (nth 2 (car tri))))))
+
+(defthm test
+  (implies (natp n)
+           (equal (new-row (pascal-triangle n)) (car (pascal-triangle (1+ n))))))
+
+(defthm row-2-sum-2
+  (implies (and (llonp tri) (is-pascal-shape tri) (> (llen tri) 2))
+           (equal (last-third-diag (cons (new-row tri) tri)) (+ (nth 1 (car tri)) (nth 2 (car tri))))))
+#|
+(defthm pascal
+  (implies (implies (and (natp n) (> n 2))
+                    (and (llonp (pascal-triangle n))
+                         (is-pascal-shape (pascal-triangle n))
+                         (> (llen (pascal-triangle n)) 2)))
+           (equal (+ (nth 1 (car (pascal-triangle n))) (nth 2 (car (pascal-triangle n))))
+                  (last-third-diag (pascal-triangle (1+ n))))))
+|#
+
+(thm
+  (implies (and (natp n) (> n 3))
+           (equal (+ (nth 1 (car (pascal-triangle n))) (nth 2 (car (pascal-triangle n))))
+                  (nth 2 (car (pascal-triangle (1+ n))))))
+  :hints (("Subgoal *1/2" :use ((:instance row-2-sum-2)))))
+
+
+(defthm triangular-diagonal
+  (implies (and (natp n) (not (zp n)))
+           (equal (ts-new-h n)
+                  (last-third-diag (pascal-triangle (+ 2 n))))))
+
+(defthm triangular-diagonal
+  (implies (and (natp n) (not (zp n)))
+           (equal (ts-new-list n)
+                  (get_3rd (pascal-triangle (+ 2 n))))))
+ ; :hints (("Goal" :induct t)))
