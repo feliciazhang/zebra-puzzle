@@ -157,7 +157,7 @@ Only triangles with at least 2 rows will have a second diagonal.
            (equal (nth 1 (car (pascal-triangle (1+ n)))) n)))
 |#
 
-;; Lemma 1.1: prove that the second element in a row of Pascal's triangle is 
+;; Lemma 1.1: prove that the second element in a row of Pascal's triangle is the sum of the 1st and 2nd in the previous row
 (defthm second-diagonal-sum
   (implies (and (natp n) (> n 0))
            (equal (cadar (pascal-triangle (1+ n)))
